@@ -1,0 +1,6 @@
+{
+  "name": "Word Embassy Newsletter",
+  "description": "Complete responsive Christian digital publication and Google-stack automated multimedia newsletter engine with Google Sheets, Google Docs, Google Forms, Google Tasks, Google Drive, NotebookLM Theological Studio, and Google Flow Automation Canvas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
