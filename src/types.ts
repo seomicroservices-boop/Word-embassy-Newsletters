@@ -89,7 +89,7 @@ export interface BibleVerseItem {
 
 export interface Newsletter {
   NewsletterID: string;
-  TopicID: string;
+  TopicID?: string;
   Edition?: NewsletterEdition;
   Title: string;
   Slug: string;
@@ -105,21 +105,21 @@ export interface Newsletter {
   Theme: string;
   Opening: string;
   Teaching: string;
-  KeyPoint1Title: string;
-  KeyPoint1Body: string;
-  KeyPoint2Title: string;
-  KeyPoint2Body: string;
-  KeyPoint3Title: string;
-  KeyPoint3Body: string;
+  KeyPoint1Title?: string;
+  KeyPoint1Body?: string;
+  KeyPoint2Title?: string;
+  KeyPoint2Body?: string;
+  KeyPoint3Title?: string;
+  KeyPoint3Body?: string;
   PracticalApplication: string;
   Prayer: string;
-  Closing: string;
+  Closing?: string;
   Excerpt: string;
   FeaturedImageURL: string;
-  InfographicURL: string;
-  GoogleDocURL: string;
-  VideoURL: string;
-  YouTubeURL: string;
+  InfographicURL?: string;
+  GoogleDocURL?: string;
+  VideoURL?: string;
+  YouTubeURL?: string;
   AudioURL?: string;
   AudioNarrationDuration?: string;
   AudioVoice?: string;
@@ -297,4 +297,60 @@ export interface GeminiStructuredNewsletterResponse {
     meta_description: string;
     keywords: string[];
   };
+}
+
+export interface BlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string;
+  topic: string;
+  topicSlug: string;
+  pillarSlug?: string;
+  relatedNewsletterSlug?: string;
+  primaryKeyword: string;
+  secondaryKeywords: string[];
+  excerpt: string;
+  publishDate: string;
+  readTimeMinutes: number;
+  author: {
+    name: string;
+    role: string;
+    avatarUrl: string;
+  };
+  featuredImageUrl: string;
+  featuredImageAlt: string;
+  scriptureReference: string;
+  scriptureText: string;
+  hebrewGreekWordStudy?: {
+    term: string;
+    originalScript: string;
+    transliteration: string;
+    strongsNumber: string;
+    definition: string;
+    theologicalSignificance: string;
+  };
+  tableOfContents: { id: string; title: string }[];
+  contentSections: {
+    id: string;
+    heading: string;
+    paragraphs: string[];
+    subsections?: {
+      title: string;
+      body: string;
+    }[];
+    callout?: {
+      type: 'quote' | 'scripture' | 'insight';
+      text: string;
+      citation?: string;
+    };
+  }[];
+  keyTakeaways: string[];
+  prayerDeclaration: string;
+  faqItems: {
+    question: string;
+    answer: string;
+  }[];
+  metaTitle: string;
+  metaDescription: string;
 }

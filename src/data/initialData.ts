@@ -802,6 +802,176 @@ export const INITIAL_NEWSLETTERS: Newsletter[] = [
     RecipientsFailed: 0,
     CreatedAt: '2026-08-25T09:00:00Z',
     UpdatedAt: '2026-08-27T14:30:00Z',
+  },
+  {
+    NewsletterID: 'NL-2026-0010',
+    Slug: 'healing-scriptures-psalm-103',
+    Title: 'Healing Scriptures in Psalm 103: Forgetting Not His Benefits',
+    Theme: 'Divine Healing & Wholeness',
+    Edition: 'DAILY_DEVOTIONAL',
+    ScriptureReference: 'Psalm 103: 1-5',
+    ScriptureText:
+      'Bless the Lord, O my soul; and all that is within me, bless His holy name! Bless the Lord, O my soul, and forget not all His benefits: Who forgives all your iniquities, Who heals all your diseases, Who redeems your life from destruction, Who crowns you with lovingkindness and tender mercies, Who satisfies your mouth with good things, so that your youth is renewed like the eagle’s.',
+    Excerpt:
+      'Explore the fivefold covenant benefits of Psalm 103. Discover how the Hebrew roots for forgiveness and healing operate together to restore body, mind, and spirit.',
+    Opening:
+      'Human memory is notoriously prone to amnesia when it comes to God’s past faithfulness. In Psalm 103, David commands his own soul to awake and remember the covenant benefits purchased by the Almighty.',
+    Teaching:
+      'The Psalmist begins with the Hebrew command Barechi nafshi et-Adonai (“Bless the Lord, O my soul”). This is a deliberate discipline of the will, instructing the emotions and physical body to align with the character of God.\n\nNotice the inseparable pairing in verse 3: “Who forgives all your iniquities, Who heals all your diseases.” The Hebrew verb for heals is rophe (from Rapha), designating a physician who binds up wounds and repairs damaged tissue. In the mind of God, the forgiveness of sin and the healing of sickness are twin expressions of the same redemptive mercy.\n\nFurthermore, verse 5 promises that God “satisfies your mouth with good things, so that your youth is renewed like the eagle’s.” The eagle’s molting process symbolizes supernatural vitality, endurance, and physical replenishment. As you feed upon God’s promises today, divine life permeates every cell of your being.',
+    PracticalApplication:
+      'Today, make a deliberate list of 3 benefits God has poured into your life. Whenever pain, fatigue, or medical anxiety knocks on the door of your mind, speak Psalm 103:2-3 aloud: "My soul blesses the Lord, and I forget not His benefits: He forgives all my iniquities and heals all my diseases."',
+    Prayer:
+      'Father in heaven, I bless Your holy name with all that is within me. Thank You that You have not dealt with me according to my sins, but according to Your boundless covenant mercy. I receive Your healing power in my body and mind today. Strengthen my physical frame, renew my youth like the eagle’s, and let my life be a living testimony of Jehovah Rapha. In Jesus’ mighty name, Amen.',
+    FeaturedImageURL:
+      'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1200&q=80',
+    AudioURL: 'https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3',
+    MetaTitle: 'Healing Scriptures in Psalm 103: Forgetting Not His Benefits | Living Word Embassy',
+    MetaDescription: 'Psalm 103:1-5 verse-by-verse exegesis on divine healing, Hebrew word study of Rapha, audio scripture reading, and morning healing prayer declaration.',
+    Keywords: ['healing scriptures in the bible', 'Psalm 103 devotional', 'prayers for healing', 'Jehovah Rapha', 'Christian healing'],
+    PublishDate: '2026-09-08',
+    Status: 'PUBLISHED',
+    EmailStatus: 'SENT',
+    RecipientsAttempted: 1,
+    RecipientsSent: 1,
+    RecipientsFailed: 0,
+    CreatedAt: '2026-09-08T06:00:00Z',
+    UpdatedAt: '2026-09-08T07:00:00Z',
+  },
+  {
+    NewsletterID: 'NL-2026-0011',
+    Slug: 'trust-in-the-lord-proverbs-3',
+    Title: 'Trust in the Lord with All Your Heart: Proverbs 3:5-6 Exegesis',
+    Theme: 'Guidance, Purpose & God’s Will',
+    Edition: 'DAILY_DEVOTIONAL',
+    ScriptureReference: 'Proverbs 3: 5-6',
+    ScriptureText:
+      'Trust in the Lord with all your heart, and lean not on your own understanding; in all your ways acknowledge Him, and He shall direct your paths.',
+    Excerpt:
+      'How to hear God’s voice and step into divine purpose. Unpack the Hebrew concepts of batach (unreserved trust) and yashar (straight paths).',
+    Opening:
+      'When standing at life’s major crossroads, our natural instinct is to calculate every risk using human logic alone. But Solomon points to a higher pathway of supernatural clarity and divine alignment.',
+    Teaching:
+      'In Proverbs 3:5, the Hebrew term for trust is batach (בָּטַח), which paints the vivid picture of throwing oneself face down upon a solid rock, resting one’s entire weight upon another without reserve.\n\nSolomon cautions against sha’an (“leaning” or supporting oneself) on finite human understanding. This is not an endorsement of ignorance, but a warning against making human intellect the supreme arbitrator of truth.\n\nIn verse 6, the promise is breathtaking: “He shall direct your paths.” The Hebrew verb yashar literally means to make smooth, level, and straight—clearing away boulder-sized obstacles and guiding the believer into God’s sovereign purpose.',
+    PracticalApplication:
+      'Write down the biggest decision or uncertainty currently facing you. Verbally acknowledge the Lord over it: say, "Father, I acknowledge You in this decision. I surrender my desire to force an outcome, and I trust You to make my path straight."',
+    Prayer:
+      'Lord God Almighty, I choose today to trust You with all my heart. Forgive me for the times I have leaned on my own anxious calculations. I surrender my plans, my career, and my household to Your sovereign wisdom. Order my steps by Your Word and lead me in paths of righteousness for Your name’s sake. In Jesus’ name, Amen.',
+    FeaturedImageURL:
+      'https://images.unsplash.com/photo-1470246973918-29a93221c455?auto=format&fit=crop&w=1200&q=80',
+    AudioURL: 'https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3',
+    MetaTitle: 'Trust in the Lord with All Your Heart: Proverbs 3:5-6 Exegesis | Living Word Embassy',
+    MetaDescription: 'Proverbs 3:5-6 devotional exegesis on discerning God’s will, hearing His voice, Hebrew word study of batach, and morning prayer for divine direction.',
+    Keywords: ['trust in the lord with all your heart devotional', 'Proverbs 3 5 6 exegesis', 'how to hear god’s voice clearly', 'god’s purpose for your life'],
+    PublishDate: '2026-09-09',
+    Status: 'PUBLISHED',
+    EmailStatus: 'SENT',
+    RecipientsAttempted: 1,
+    RecipientsSent: 1,
+    RecipientsFailed: 0,
+    CreatedAt: '2026-09-09T06:00:00Z',
+    UpdatedAt: '2026-09-09T07:00:00Z',
+  },
+  {
+    NewsletterID: 'NL-2026-0012',
+    Slug: 'speaking-to-the-mountain-mark-11',
+    Title: 'Speaking to Your Mountain: Mark 11:22-24 Exegesis',
+    Theme: 'Faith, Doubt & Mountain Moving',
+    Edition: 'DAILY_DEVOTIONAL',
+    ScriptureReference: 'Mark 11: 22-24',
+    ScriptureText:
+      'So Jesus answered and said to them, “Have faith in God. For assuredly, I say to you, whoever says to this mountain, ‘Be removed and be cast into the sea,’ and does not doubt in his heart, but believes that those things he says will be done, he will have whatever he says. Therefore I say to you, whatever things you ask when you pray, believe that you receive them, and you will have them.”',
+    Excerpt:
+      'Discover the authority of faith in the spoken Word of God. Learn why Jesus commanded believers to address obstacles directly rather than simply complaining about them.',
+    Opening:
+      'We often spend hours talking to our friends about our problems. But Jesus commands a radically different spiritual posture: He tells us to speak to the mountain in His authority.',
+    Teaching:
+      'In Mark 11:22, Jesus begins with Echiete pistin Theou: “Have faith in God” (or literally, “Hold the faith of God”). Faith is not faith in faith; it is unyielding trust in the character, fidelity, and covenants of the Creator.\n\nNotice the emphasis on vocalization: Jesus mentions believing once, but He emphasizes saying three times (“says to this mountain... those things he says... he will have whatever he says”). Spiritual authority is exercised through the mouth in agreement with the heart.\n\nWhen doubt attacks, recognize that doubt is an external suggestion from sensory circumstance. Do not permit doubts to take root in your inner man; displace them with the unshakeable truth of God’s Word.',
+    PracticalApplication:
+      'Identify the "mountain" confronting your life today—be it financial lack, sickness, or relational strife. Find an exact promise in Scripture addressing it, and speak aloud to the obstacle: "Mountain of fear, be removed in Jesus’ name. The Lord is my strength and my shield!"',
+    Prayer:
+      'Lord Jesus, thank You for the authority given to Your Church. I repent of speaking words of defeat and despair. Today, I align my tongue with Your eternal Word. I speak to every mountain of sickness, anxiety, and impossibility, commanding it to be cast down in Your mighty name. I believe that I receive what You have promised. Amen.',
+    FeaturedImageURL:
+      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80',
+    AudioURL: 'https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3',
+    MetaTitle: 'Speaking to Your Mountain: Mark 11:22-24 Exegesis | Living Word Embassy',
+    MetaDescription: 'Mark 11:22-24 devotional study on mountain-moving faith, overcoming doubt, speaking to obstacles with scriptural authority, and prayer.',
+    Keywords: ['walking by faith and not by sight', 'how to increase your faith in god', 'mark 11 23 speaking to mountains', 'overcoming doubt'],
+    PublishDate: '2026-09-09',
+    Status: 'PUBLISHED',
+    EmailStatus: 'SENT',
+    RecipientsAttempted: 1,
+    RecipientsSent: 1,
+    RecipientsFailed: 0,
+    CreatedAt: '2026-09-09T08:00:00Z',
+    UpdatedAt: '2026-09-09T09:00:00Z',
+  },
+  {
+    NewsletterID: 'NL-2026-0013',
+    Slug: 'god-shall-supply-all-your-need',
+    Title: 'God Shall Supply All Your Need: Philippians 4:19 Exegesis',
+    Theme: 'Covenant Provision & Stewardship',
+    Edition: 'DAILY_DEVOTIONAL',
+    ScriptureReference: 'Philippians 4: 19',
+    ScriptureText:
+      'And my God shall supply all your need according to His riches in glory by Christ Jesus.',
+    Excerpt:
+      'How the Apostle Paul’s prison testimony unlocks supernatural confidence in God’s heavenly storehouses and frees the believer from financial dread.',
+    Opening:
+      'Paul wrote one of the most confident declarations of divine provision in human history not from an opulent palace, but while bound in chains in a Roman prison.',
+    Teaching:
+      'The Greek verb used for supply is pleroo (πληρόω), which means to fill up to the brim, to satisfy completely, and to flood until no deficit remains.\n\nNotice the divine measurement: God does not supply out of your local economy, your employer’s budget, or national inflation rates. He supplies “according to His riches in glory by Christ Jesus.” The reservoir of heavenly grace is inexhaustible.\n\nThis promise was given to a generous, giving church that had partnered with the Gospel. When our hearts and hands are open in kingdom stewardship, God ensures that our own cup runs over.',
+    PracticalApplication:
+      'Take a moment to thank God for supplying your daily bread. If you are facing a financial challenge, refuse to panic. Pray: "My God shall supply all my need according to His riches in glory by Christ Jesus. I walk in covenant provision, not worldly lack."',
+    Prayer:
+      'Heavenly Father, Jehovah Jireh, You are my Shepherd and I shall not lack any good thing. You feed the birds of the air and clothe the grass of the field; how much more do You care for me, Your redeemed child! I release all financial dread into Your capable hands. Grant me wisdom to steward every resource for Your kingdom glory. In Jesus’ name, Amen.',
+    FeaturedImageURL:
+      'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=1200&q=80',
+    AudioURL: 'https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3',
+    MetaTitle: 'God Shall Supply All Your Need: Philippians 4:19 Exegesis | Living Word Embassy',
+    MetaDescription: 'Philippians 4:19 verse-by-verse study on covenant provision, Greek exegesis of pleroo, breaking financial worry, and morning stewardship prayer.',
+    Keywords: ['god will provide all your needs scripture and devotional', 'the lord is my shepherd i shall not want devotional', 'Philippians 4 19 study', 'covenant provision'],
+    PublishDate: '2026-09-10',
+    Status: 'PUBLISHED',
+    EmailStatus: 'SENT',
+    RecipientsAttempted: 1,
+    RecipientsSent: 1,
+    RecipientsFailed: 0,
+    CreatedAt: '2026-09-10T06:00:00Z',
+    UpdatedAt: '2026-09-10T07:00:00Z',
+  },
+  {
+    NewsletterID: 'NL-2026-0014',
+    Slug: 'no-condemnation-romans-8',
+    Title: 'No Condemnation: Resting in Christ’s Finished Work (Romans 8:1-2)',
+    Theme: 'Grace, Forgiveness & Freedom',
+    Edition: 'DAILY_DEVOTIONAL',
+    ScriptureReference: 'Romans 8: 1-2',
+    ScriptureText:
+      'There is therefore now no condemnation to those who are in Christ Jesus, who do not walk according to the flesh, but according to the Spirit. For the law of the Spirit of life in Christ Jesus has made me free from the law of sin and death.',
+    Excerpt:
+      'How the legal decree of the Gospel permanently silences shame, regret, and the voice of the accuser. Discover true freedom in Christ.',
+    Opening:
+      'One of the greatest weapons of the enemy against the believer is weaponized shame—reminding you of past mistakes, sins, and deficiencies to keep your spirit paralyzed.',
+    Teaching:
+      'Paul delivers a thunderous legal verdict in Romans 8:1: Ouden ara nyn katakrima (“There is therefore NOW NO condemnation”). The Greek word katakrima refers to the punitive penalty passed by a court against a convicted criminal.\n\nWhy is there no condemnation? Because at Calvary, Jesus Christ stood as your legal substitute. He drank the full cup of God’s righteous judgment against sin. For God to condemn the believer who is in Christ would be double jeopardy, for the debt has already been paid in full by the blood of the Lamb.\n\nVerse 2 explains the liberating mechanism: the law of the Spirit of life in Christ Jesus has supernaturally superseded the gravitational pull of sin and death.',
+    PracticalApplication:
+      'When old memories or demonic accusations try to bring guilt back into your heart, point to the Cross. Speak Romans 8:1 aloud: "There is now no condemnation for me, for I am in Christ Jesus. My record has been wiped clean by the blood of the Lamb."',
+    Prayer:
+      'Father of all mercies, I praise You for the glorious freedom of the Gospel. Thank You that through Jesus Christ, the verdict of condemnation has been cancelled forever. I choose today to walk in the liberty of the Spirit, free from shame, fear, and self-reproach. Teach me to extend this same unreserved forgiveness to those who have offended me. In Jesus’ name, Amen.',
+    FeaturedImageURL:
+      'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=1200&q=80',
+    AudioURL: 'https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3',
+    MetaTitle: 'No Condemnation: Romans 8:1-2 Exegesis & Devotional | Living Word Embassy',
+    MetaDescription: 'Romans 8:1-2 verse-by-verse exegesis on overcoming guilt and shame, Greek study of katakrima, audio reading, and prayer for spiritual freedom.',
+    Keywords: ['there is therefore now no condemnation devotional', 'Romans 8 1 study', 'how to forgive someone who hurt you biblically', 'grace and freedom christian'],
+    PublishDate: '2026-09-10',
+    Status: 'PUBLISHED',
+    EmailStatus: 'SENT',
+    RecipientsAttempted: 1,
+    RecipientsSent: 1,
+    RecipientsFailed: 0,
+    CreatedAt: '2026-09-10T08:00:00Z',
+    UpdatedAt: '2026-09-10T09:00:00Z',
   }
 ];
 

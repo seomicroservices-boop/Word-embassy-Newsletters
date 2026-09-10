@@ -54,4 +54,34 @@
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
+  <url>
+    <loc>https://wordpastorai.com/newsletter/healing-scriptures-psalm-103</loc>
+    <lastmod>2026-09-08T06:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://wordpastorai.com/newsletter/trust-in-the-lord-proverbs-3</loc>
+    <lastmod>2026-09-09T06:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://wordpastorai.com/newsletter/speaking-to-the-mountain-mark-11</loc>
+    <lastmod>2026-09-09T08:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://wordpastorai.com/newsletter/god-shall-supply-all-your-need</loc>
+    <lastmod>2026-09-10T06:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://wordpastorai.com/newsletter/no-condemnation-romans-8</loc>
+    <lastmod>2026-09-10T08:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
 </urlset>

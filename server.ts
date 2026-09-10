@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'path';
 import fs from 'node:fs';
 import { GoogleGenAI, Type } from '@google/genai';
+import { generateRssFeed, injectSeoMeta } from './server/seoRenderer';
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -733,7 +734,7 @@ app.post('/api/generate-theology', async (req, res) => {
   }
 });
 
-// SEO Endpoints: robots.txt and XML Sitemaps
+// SEO Endpoints: robots.txt, XML Sitemaps, and RSS Feed
 app.get('/robots.txt', (_req, res) => {
   const robotsPath = path.join(process.cwd(), 'public', 'robots.txt');
   if (fs.existsSync(robotsPath)) {
@@ -742,6 +743,19 @@ app.get('/robots.txt', (_req, res) => {
   }
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.send(`User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nSitemap: https://wordpastorai.com/sitemap.xml\n`);
+});
+
+// Dynamic RSS 2.0 / Podcast Syndication Feed
+app.get(['/rss.xml', '/feed.xml'], (_req, res) => {
+  try {
+    const xml = generateRssFeed();
+    res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return res.send(xml);
+  } catch (err) {
+    console.error('RSS feed error:', err);
+    res.status(500).send('<!-- Error generating RSS feed -->');
+  }
 });
 
 app.get('/sitemap.xml', (_req, res) => {
@@ -771,6 +785,15 @@ app.get('/sitemap-pillars.xml', (_req, res) => {
   res.status(404).send('<!-- Sitemap not found -->');
 });
 
+app.get('/sitemap-blog.xml', (_req, res) => {
+  const sitemapPath = path.join(process.cwd(), 'public', 'sitemap-blog.xml');
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  if (fs.existsSync(sitemapPath)) {
+    return res.sendFile(sitemapPath);
+  }
+  res.status(404).send('<!-- Sitemap not found -->');
+});
+
 // Start server and mount Vite middleware
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
@@ -782,9 +805,24 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
+    const indexHtmlPath = path.join(distPath, 'index.html');
+    let cachedHtml = '';
+
     app.use(express.static(distPath));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+    app.get('*', (req, res) => {
+      try {
+        if (!cachedHtml && fs.existsSync(indexHtmlPath)) {
+          cachedHtml = fs.readFileSync(indexHtmlPath, 'utf-8');
+        }
+        if (cachedHtml) {
+          const rendered = injectSeoMeta(cachedHtml, req.path);
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          return res.send(rendered);
+        }
+      } catch (seoErr) {
+        console.warn('SSR SEO injection fallback:', seoErr);
+      }
+      res.sendFile(indexHtmlPath);
     });
   }
 

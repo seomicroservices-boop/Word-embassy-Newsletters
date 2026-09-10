@@ -96,6 +96,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               Topics & Pillars
             </button>
             <button
+              onClick={() => onNavigate('blog')}
+              className={`px-3.5 py-2 rounded-md transition-colors flex items-center gap-1.5 ${
+                currentView === 'blog' || currentView === 'blog-post'
+                  ? 'bg-amber-50 text-[#B45309] font-semibold'
+                  : 'hover:bg-slate-100 text-slate-700'
+              }`}
+              id="nav-blog-btn"
+            >
+              <BookOpen className="w-4 h-4 text-slate-400" />
+              Blog
+            </button>
+            <button
               onClick={() => onNavigate('archive')}
               className={`px-3.5 py-2 rounded-md transition-colors flex items-center gap-1.5 ${
                 currentView === 'archive'

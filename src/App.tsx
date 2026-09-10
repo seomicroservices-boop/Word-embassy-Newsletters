@@ -8,6 +8,10 @@ import { VideosPage } from './components/VideosPage';
 import { AboutPage } from './components/AboutPage';
 import { SubscribePage } from './components/SubscribePage';
 import { UnsubscribePage } from './components/UnsubscribePage';
+import { TopicHub } from './components/TopicHub';
+import { PillarPage } from './components/PillarPage';
+import { BlogHub } from './components/BlogHub';
+import { BlogPostDetail } from './components/BlogPostDetail';
 import { AdminDashboard } from './components/AdminDashboard';
 import { AdminAuthGate } from './components/AdminAuthGate';
 import {
@@ -315,17 +319,115 @@ export default function App() {
     }
   }, [currentView, currentSlug]);
 
-  // Navigation handler
+  // Initial URL parsing and browser history sync
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const parseLocation = () => {
+        const path = window.location.pathname;
+        if (path.startsWith('/pillar/')) {
+          const s = path.replace('/pillar/', '').replace(/\/$/, '');
+          if (s) {
+            setCurrentSlug(s);
+            setCurrentView('pillar');
+            return;
+          }
+        }
+        if (path.startsWith('/blog/')) {
+          const s = path.replace('/blog/', '').replace(/\/$/, '');
+          if (s) {
+            setCurrentSlug(s);
+            setCurrentView('blog-post');
+            return;
+          }
+        }
+        if (path === '/blog') {
+          setCurrentView('blog');
+          return;
+        }
+        if (path === '/topics') {
+          setCurrentView('topics');
+          return;
+        }
+        if (path.startsWith('/newsletter/')) {
+          const s = path.replace('/newsletter/', '').replace(/\/$/, '');
+          if (s) {
+            setCurrentSlug(s);
+            setCurrentView('newsletter');
+            return;
+          }
+        }
+        if (path === '/archive') {
+          setCurrentView('archive');
+          return;
+        }
+        if (path === '/videos') {
+          setCurrentView('videos');
+          return;
+        }
+        if (path === '/about') {
+          setCurrentView('about');
+          return;
+        }
+        if (path === '/subscribe') {
+          setCurrentView('subscribe');
+          return;
+        }
+      };
+
+      parseLocation();
+      window.addEventListener('popstate', parseLocation);
+      return () => window.removeEventListener('popstate', parseLocation);
+    }
+  }, []);
+
+  // Navigation handler with browser history pushState
   const handleNavigate = (view: string, slugOrToken?: string) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (view === 'newsletter' && slugOrToken) {
+
+    let newUrl = '/';
+    if (view === 'home') {
+      newUrl = '/';
+      setCurrentView('home');
+    } else if (view === 'newsletter' && slugOrToken) {
+      newUrl = `/newsletter/${slugOrToken}`;
       setCurrentSlug(slugOrToken);
       setCurrentView('newsletter');
+    } else if (view === 'pillar' && slugOrToken) {
+      newUrl = `/pillar/${slugOrToken}`;
+      setCurrentSlug(slugOrToken);
+      setCurrentView('pillar');
+    } else if (view === 'blog-post' && slugOrToken) {
+      newUrl = `/blog/${slugOrToken}`;
+      setCurrentSlug(slugOrToken);
+      setCurrentView('blog-post');
+    } else if (view === 'blog') {
+      newUrl = '/blog';
+      setCurrentView('blog');
+    } else if (view === 'topics') {
+      newUrl = '/topics';
+      setCurrentView('topics');
+    } else if (view === 'archive') {
+      newUrl = '/archive';
+      setCurrentView('archive');
+    } else if (view === 'videos') {
+      newUrl = '/videos';
+      setCurrentView('videos');
+    } else if (view === 'about') {
+      newUrl = '/about';
+      setCurrentView('about');
+    } else if (view === 'subscribe') {
+      newUrl = '/subscribe';
+      setCurrentView('subscribe');
     } else if (view === 'unsubscribe') {
+      newUrl = '/unsubscribe';
       if (slugOrToken) setUnsubscribeToken(slugOrToken);
       setCurrentView('unsubscribe');
     } else {
       setCurrentView(view);
+    }
+
+    if (typeof window !== 'undefined' && window.history && newUrl) {
+      window.history.pushState({}, '', newUrl);
     }
   };
 
@@ -1064,6 +1166,36 @@ export default function App() {
             onNavigate={handleNavigate}
             onSubscribe={handleSubscribe}
             onUpdateNewsletter={handleUpdateNewsletter}
+          />
+        )}
+
+        {currentView === 'topics' && (
+          <TopicHub
+            newsletters={newsletters}
+            onNavigate={handleNavigate}
+          />
+        )}
+
+        {currentView === 'pillar' && (
+          <PillarPage
+            slug={currentSlug}
+            newsletters={newsletters}
+            onNavigate={handleNavigate}
+          />
+        )}
+
+        {currentView === 'blog' && (
+          <BlogHub
+            onNavigate={handleNavigate}
+            onSubscribe={handleSubscribe}
+          />
+        )}
+
+        {currentView === 'blog-post' && (
+          <BlogPostDetail
+            slug={currentSlug}
+            onNavigate={handleNavigate}
+            onSubscribe={handleSubscribe}
           />
         )}
 

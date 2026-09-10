@@ -8,61 +8,61 @@
   <!-- Core Main Pages -->
   <url>
     <loc>https://wordpastorai.com/</loc>
-    <lastmod>2026-09-04T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-10T00:00:00+00:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://wordpastorai.com/archive</loc>
-    <lastmod>2026-09-04T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-10T00:00:00+00:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://wordpastorai.com/topics</loc>
-    <lastmod>2026-09-04T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-10T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://wordpastorai.com/videos</loc>
-    <lastmod>2026-09-04T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-10T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://wordpastorai.com/about</loc>
-    <lastmod>2026-09-04T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-10T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://wordpastorai.com/subscribe</loc>
-    <lastmod>2026-09-04T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-10T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://wordpastorai.com/editorial-policy</loc>
-    <lastmod>2026-09-04T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-10T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://wordpastorai.com/statement-of-faith</loc>
-    <lastmod>2026-09-04T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-10T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://wordpastorai.com/privacy</loc>
-    <lastmod>2026-09-04T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-10T00:00:00+00:00</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://wordpastorai.com/terms</loc>
-    <lastmod>2026-09-04T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-10T00:00:00+00:00</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -70,19 +70,19 @@
   <!-- High Authority Pillar Pages -->
   <url>
     <loc>https://wordpastorai.com/pillar/divine-protection</loc>
-    <lastmod>2026-09-04T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-10T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
     <loc>https://wordpastorai.com/pillar/supernatural-peace</loc>
-    <lastmod>2026-09-04T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-10T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
     <loc>https://wordpastorai.com/pillar/persistent-prayer</loc>
-    <lastmod>2026-09-04T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-10T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>

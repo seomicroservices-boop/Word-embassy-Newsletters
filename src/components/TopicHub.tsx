@@ -25,29 +25,56 @@ export const TOPIC_CATEGORIES = [
   {
     id: 'all',
     name: 'All Topics',
-    count: 9,
-    description: 'All biblical exegesis and daily devotional teachings.',
+    pillarSlug: '',
+    description: 'All biblical exegesis, daily devotional teachings, and expository guides.',
   },
   {
     id: 'protection',
-    name: 'Divine Protection & Deliverance',
-    count: 3,
+    name: 'Divine Protection',
     pillarSlug: 'divine-protection',
     description: 'Abiding under the shadow of the Almighty, angelic ministry, and spiritual warfare.',
   },
   {
     id: 'peace',
-    name: 'Supernatural Peace & Mental Renewal',
-    count: 3,
+    name: 'Supernatural Peace',
     pillarSlug: 'supernatural-peace',
     description: 'Overcoming anxiety, casting cares, and biblical thought transformation.',
   },
   {
     id: 'prayer',
-    name: 'Persistent Prayer & Faith',
-    count: 3,
+    name: 'Persistent Prayer',
     pillarSlug: 'persistent-prayer',
-    description: 'Prevailing intercession, tenacious faith, and walking when you cannot see.',
+    description: 'Prevailing intercession, tenacious faith, and communion with God.',
+  },
+  {
+    id: 'healing',
+    name: 'Divine Healing',
+    pillarSlug: 'divine-healing',
+    description: 'Covenant healing, physical restoration, and Jehovah Rapha’s promises.',
+  },
+  {
+    id: 'guidance',
+    name: 'Divine Guidance',
+    pillarSlug: 'guidance-and-purpose',
+    description: 'Hearing God’s voice, discovering purpose, and ordering your steps.',
+  },
+  {
+    id: 'faith',
+    name: 'Mountain-Moving Faith',
+    pillarSlug: 'mountain-moving-faith',
+    description: 'Operating in unwavering faith, overcoming doubt, and speaking God’s Word.',
+  },
+  {
+    id: 'provision',
+    name: 'Covenant Provision',
+    pillarSlug: 'covenant-provision',
+    description: 'Kingdom stewardship, supernatural supply, and Jehovah Jireh’s storehouses.',
+  },
+  {
+    id: 'grace',
+    name: 'Grace & Forgiveness',
+    pillarSlug: 'grace-and-forgiveness',
+    description: 'Freedom from condemnation, cleansing of conscience, and reconciling grace.',
   },
 ];
 
@@ -63,7 +90,7 @@ export const TopicHub: React.FC<TopicHubProps> = ({
     window.scrollTo(0, 0);
     setStandardPageSEO(
       'Bible Study Topics & Exegetical Scripture Hub | Living Word Embassy',
-      'Explore theological topic clusters, verse-by-verse exegesis, audio narrations, and biblical guides on divine protection, supernatural peace, and prayer.',
+      'Explore theological topic clusters, verse-by-verse exegesis, audio narrations, and biblical guides on divine protection, healing, faith, and grace.',
       '/topics'
     );
     trackSEOEvent('page_view', { page: 'topics_hub' });
@@ -74,7 +101,8 @@ export const TopicHub: React.FC<TopicHubProps> = ({
       searchQuery === '' ||
       item.Title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.ScriptureReference.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.Theme.toLowerCase().includes(searchQuery.toLowerCase());
+      item.Theme.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.Excerpt.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (!matchesSearch) return false;
 
@@ -83,21 +111,65 @@ export const TopicHub: React.FC<TopicHubProps> = ({
       return (
         item.Slug === 'divine-protection' ||
         item.Slug === 'the-lord-is-my-shepherd-psalm-23' ||
-        item.Slug === 'the-armor-of-god'
+        item.Slug === 'the-armor-of-god' ||
+        item.Theme.toLowerCase().includes('protection') ||
+        item.Theme.toLowerCase().includes('shepherd')
       );
     }
     if (activeTab === 'peace') {
       return (
         item.Slug === 'the-peace-of-god' ||
         item.Slug === 'casting-all-your-cares' ||
-        item.Slug === 'renewing-your-mind'
+        item.Slug === 'renewing-your-mind' ||
+        item.Theme.toLowerCase().includes('peace') ||
+        item.Theme.toLowerCase().includes('anxiety')
       );
     }
     if (activeTab === 'prayer') {
       return (
         item.Slug === 'the-power-of-persistent-prayer' ||
         item.Slug === 'walking-by-faith' ||
-        item.Slug === 'standing-firm-in-faith-and-love'
+        item.Slug === 'standing-firm-in-faith-and-love' ||
+        item.Theme.toLowerCase().includes('prayer')
+      );
+    }
+    if (activeTab === 'healing') {
+      return (
+        item.Slug === 'healing-scriptures-psalm-103' ||
+        item.Theme.toLowerCase().includes('healing') ||
+        item.Theme.toLowerCase().includes('wholeness')
+      );
+    }
+    if (activeTab === 'guidance') {
+      return (
+        item.Slug === 'trust-in-the-lord-proverbs-3' ||
+        item.Slug === 'the-lord-is-my-shepherd-psalm-23' ||
+        item.Theme.toLowerCase().includes('guidance') ||
+        item.Theme.toLowerCase().includes('purpose')
+      );
+    }
+    if (activeTab === 'faith') {
+      return (
+        item.Slug === 'speaking-to-the-mountain-mark-11' ||
+        item.Slug === 'walking-by-faith' ||
+        item.Slug === 'standing-firm-in-faith-and-love' ||
+        item.Theme.toLowerCase().includes('faith')
+      );
+    }
+    if (activeTab === 'provision') {
+      return (
+        item.Slug === 'god-shall-supply-all-your-need' ||
+        item.Slug === 'the-lord-is-my-shepherd-psalm-23' ||
+        item.Theme.toLowerCase().includes('provision') ||
+        item.Theme.toLowerCase().includes('stewardship')
+      );
+    }
+    if (activeTab === 'grace') {
+      return (
+        item.Slug === 'no-condemnation-romans-8' ||
+        item.Slug === 'renewing-your-mind' ||
+        item.Theme.toLowerCase().includes('grace') ||
+        item.Theme.toLowerCase().includes('forgiveness')
       );
     }
     return true;
@@ -147,19 +219,19 @@ export const TopicHub: React.FC<TopicHubProps> = ({
           </div>
         </div>
 
-        {/* The 3 Core Comprehensive Pillar Cards */}
+        {/* The 8 Core Comprehensive Pillar Cards */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-serif text-2xl font-bold text-slate-900 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-amber-600" />
-              <span>Comprehensive Theological Pillar Guides</span>
+              <span>8 Comprehensive Theological Pillar Guides</span>
             </h2>
             <span className="text-xs text-slate-500 font-medium hidden sm:inline">
               Authoritative, Long-Form Expository Compendiums
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {SEO_PILLARS.map((pillar) => (
               <div
                 key={pillar.id}

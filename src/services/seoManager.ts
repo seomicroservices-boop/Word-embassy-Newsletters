@@ -360,7 +360,9 @@ export function trackSEOEvent(
     | 'pdf_download'
     | 'pillar_view'
     | 'topic_filter'
-    | 'channel_click',
+    | 'channel_click'
+    | 'blog_view'
+    | 'blog_post_view',
   params: Record<string, any> = {}
 ) {
   if (typeof window === 'undefined') return;

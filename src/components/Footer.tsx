@@ -126,10 +126,18 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
             <ul className="space-y-2.5 text-sm">
               <li>
                 <button
-                  onClick={() => onNavigate('topics')}
+                  onClick={() => onNavigate('blog')}
                   className="hover:text-amber-400 transition-colors text-amber-300 font-semibold flex items-center gap-1.5 text-left"
                 >
-                  <span>→ Theological Pillars Hub</span>
+                  <span>→ Biblical Expository Blog</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onNavigate('topics')}
+                  className="hover:text-amber-400 transition-colors text-slate-300 flex items-center gap-1.5 text-left"
+                >
+                  <span>Theological Pillars Hub</span>
                 </button>
               </li>
               <li>
