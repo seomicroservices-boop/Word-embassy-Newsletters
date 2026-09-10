@@ -23,6 +23,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { Newsletter, Subscriber, SubscriberGroup, AppSettings } from '../types';
+import { formatBibleCitation, parseScriptureReference } from '../services/bibleScripture';
 
 export interface EmailTemplate {
   id: string;
@@ -40,9 +41,16 @@ export const NEWSLETTER_TEMPLATES: EmailTemplate[] = [
     name: 'Cathedral Gold Devotional (Classic)',
     category: 'Devotional',
     accentColor: '#D97706',
-    description: 'Refined editorial styling with gold borders, pastoral reflections, and balanced scripture blockquote.',
-    headerTagline: 'Word Embassy Pastoral Devotional',
+    description: 'Refined editorial styling with gold borders, pastoral reflections, and prominent Bible chapter & verses foundation.',
+    headerTagline: 'Living Word Embassy Pastoral Devotional',
     renderHtml: (nl, recipientEmail, token = 'tok_default') => {
+      const parsed = parseScriptureReference(nl.ScriptureReference);
+      const book = nl.BibleBook || parsed.book || 'Psalm';
+      const chapter = nl.BibleChapter || parsed.chapter || '23';
+      const verses = nl.BibleVerses || parsed.verses || '1';
+      const citation = formatBibleCitation(nl.ScriptureReference, book, chapter, verses);
+      const translation = nl.BibleTranslation || 'NIV';
+
       return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
@@ -50,17 +58,40 @@ export const NEWSLETTER_TEMPLATES: EmailTemplate[] = [
   <div style="max-width: 620px; margin: 24px auto; background-color: #fdfbf7; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.06);">
     <!-- Header -->
     <div style="background-color: #0f172a; padding: 28px 24px; text-align: center; border-bottom: 3px solid #d97706;">
-      <span style="font-size: 10px; font-family: sans-serif; text-transform: uppercase; letter-spacing: 2.5px; color: #f59e0b; font-weight: bold; display: block; margin-bottom: 6px;">WORD EMBASSY DIGITAL MINISTRIES</span>
+      <span style="font-size: 10px; font-family: sans-serif; text-transform: uppercase; letter-spacing: 2.5px; color: #f59e0b; font-weight: bold; display: block; margin-bottom: 6px;">LIVING WORD EMBASSY DIGITAL MINISTRIES</span>
       <h1 style="color: #ffffff; font-size: 24px; margin: 0; font-weight: 700; line-height: 1.3;">${nl.Title}</h1>
-      <p style="color: #cbd5e1; font-style: italic; margin: 8px 0 0 0; font-size: 14px;">${nl.ScriptureReference}</p>
+      <div style="margin-top: 10px; display: inline-block; background-color: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 999px; padding: 4px 14px;">
+        <span style="color: #fcd34d; font-family: sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.5px;">📖 ${citation} (${translation})</span>
+      </div>
     </div>
 
     <!-- Main Content Body -->
     <div style="padding: 32px 28px; color: #1e293b; font-size: 15px; line-height: 1.75;">
+      <!-- Dedicated Bible Chapter & Verses Banner -->
+      <div style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 14px 18px; margin-bottom: 24px; font-family: sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #92400e;">
+              BIBLE CHAPTER & VERSES FOUNDATION
+            </td>
+            <td align="right" style="font-size: 12px; font-weight: 700; color: #78350f;">
+              ${citation}
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" style="padding-top: 6px; font-size: 13px; color: #451a03; border-top: 1px solid #fef3c7; margin-top: 6px;">
+              <strong>Book:</strong> ${book} &nbsp;•&nbsp; <strong>Chapter:</strong> ${chapter} &nbsp;•&nbsp; <strong>Verse(s):</strong> ${verses}
+            </td>
+          </tr>
+        </table>
+      </div>
+
       <!-- Scripture Highlight -->
-      <div style="background-color: #fef3c7; border-left: 4px solid #d97706; padding: 16px 20px; margin-bottom: 24px; border-radius: 0 8px 8px 0; font-style: italic; color: #78350f; font-size: 15px;">
+      <div style="background-color: #fef3c7; border-left: 4px solid #d97706; padding: 18px 22px; margin-bottom: 24px; border-radius: 0 10px 10px 0; font-style: italic; color: #78350f; font-size: 16px; line-height: 1.6;">
         “${nl.ScriptureText}”
-        <div style="text-align: right; font-weight: bold; font-style: normal; font-size: 12px; margin-top: 6px; color: #b45309;">— ${nl.ScriptureReference}</div>
+        <div style="text-align: right; font-weight: bold; font-style: normal; font-size: 13px; margin-top: 8px; color: #b45309;">
+          — ${citation} (${translation})
+        </div>
       </div>
 
       <p style="margin-top: 0;"><strong>Dear Ambassador in Christ,</strong></p>
@@ -91,14 +122,14 @@ export const NEWSLETTER_TEMPLATES: EmailTemplate[] = [
       <!-- YouTube / Media CTA -->
       <div style="text-align: center; margin: 30px 0 16px 0;">
         <a href="https://wordembassy.org" target="_blank" style="background-color: #0f172a; color: #f59e0b; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; font-family: sans-serif; font-size: 13px; display: inline-block; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-          Read Full Exegesis on Word Embassy →
+          Read Full Devotional on Living Word Embassy →
         </a>
       </div>
     </div>
 
     <!-- Footer -->
     <div style="background-color: #0f172a; padding: 20px 24px; text-align: center; color: #94a3b8; font-size: 12px; font-family: sans-serif; border-top: 1px solid #1e293b;">
-      <p style="margin: 0 0 6px 0;">Dispatched with prayer from <strong>Word Embassy Ministries</strong></p>
+      <p style="margin: 0 0 6px 0;">Dispatched with prayer from <strong>Living Word Embassy Ministries</strong></p>
       <p style="margin: 0; font-size: 11px; color: #64748b;">Delivered to: <strong>${recipientEmail}</strong> • <a href="mailto:embassyword@gmail.com" style="color: #f59e0b; text-decoration: none;">embassyword@gmail.com</a></p>
     </div>
   </div>
@@ -112,24 +143,33 @@ export const NEWSLETTER_TEMPLATES: EmailTemplate[] = [
     category: 'Weekly Digest',
     accentColor: '#3B82F6',
     description: 'Clean modern sans-serif aesthetic with spacious typographic hierarchy, high contrast, and scripture badges.',
-    headerTagline: 'Weekly Word Embassy Digest',
+    headerTagline: 'Weekly Living Word Embassy Digest',
     renderHtml: (nl, recipientEmail) => {
+      const parsed = parseScriptureReference(nl.ScriptureReference);
+      const book = nl.BibleBook || parsed.book || 'Psalm';
+      const chapter = nl.BibleChapter || parsed.chapter || '23';
+      const verses = nl.BibleVerses || parsed.verses || '1';
+      const citation = formatBibleCitation(nl.ScriptureReference, book, chapter, verses);
+
       return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
   <div style="max-width: 600px; margin: 24px auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
     <div style="padding: 32px 28px 24px 28px; border-bottom: 1px solid #f1f5f9;">
-      <span style="background-color: #eff6ff; color: #2563eb; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 1px;">
-        ${nl.ScriptureReference}
-      </span>
-      <h1 style="color: #0f172a; font-size: 26px; font-weight: 800; margin: 16px 0 8px 0; line-height: 1.25;">${nl.Title}</h1>
-      <p style="color: #64748b; font-size: 14px; margin: 0;">Word Embassy Weekly Reflection</p>
+      <div style="margin-bottom: 12px;">
+        <span style="background-color: #eff6ff; color: #2563eb; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 1px; display: inline-block;">
+          BIBLE CHAPTER & VERSES: ${citation}
+        </span>
+      </div>
+      <h1 style="color: #0f172a; font-size: 26px; font-weight: 800; margin: 12px 0 8px 0; line-height: 1.25;">${nl.Title}</h1>
+      <p style="color: #64748b; font-size: 13px; margin: 0;">Living Word Embassy Devotional Edition • Book: <strong>${book}</strong> | Ch: <strong>${chapter}</strong> | V: <strong>${verses}</strong></p>
     </div>
 
     <div style="padding: 28px; color: #334155; font-size: 15px; line-height: 1.7;">
       <div style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 4px; font-size: 15px; color: #1e293b; margin-bottom: 24px;">
         “${nl.ScriptureText}”
+        <div style="text-align: right; font-weight: bold; font-size: 12px; margin-top: 6px; color: #2563eb;">— ${citation}</div>
       </div>
 
       <p>${nl.Teaching}</p>
@@ -146,7 +186,7 @@ export const NEWSLETTER_TEMPLATES: EmailTemplate[] = [
     </div>
 
     <div style="background-color: #f8fafc; padding: 20px 28px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
-      <p style="margin: 0 0 4px 0;">Delivered to <strong>${recipientEmail}</strong> from Word Embassy Editorial.</p>
+      <p style="margin: 0 0 4px 0;">Delivered to <strong>${recipientEmail}</strong> from Living Word Embassy Editorial.</p>
       <p style="margin: 0;"><a href="mailto:embassyword@gmail.com" style="color: #3b82f6; text-decoration: none;">embassyword@gmail.com</a></p>
     </div>
   </div>
@@ -160,8 +200,14 @@ export const NEWSLETTER_TEMPLATES: EmailTemplate[] = [
     category: 'Prayer & Intercession',
     accentColor: '#10B981',
     description: 'Designed specifically for prayer circles, intercessors, and pastoral benedictions with prominent prayer cards.',
-    headerTagline: 'Word Embassy Prayer & Intercession Network',
+    headerTagline: 'Living Word Embassy Prayer & Intercession Network',
     renderHtml: (nl, recipientEmail) => {
+      const parsed = parseScriptureReference(nl.ScriptureReference);
+      const book = nl.BibleBook || parsed.book || 'Psalm';
+      const chapter = nl.BibleChapter || parsed.chapter || '23';
+      const verses = nl.BibleVerses || parsed.verses || '1';
+      const citation = formatBibleCitation(nl.ScriptureReference, book, chapter, verses);
+
       return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
@@ -170,12 +216,17 @@ export const NEWSLETTER_TEMPLATES: EmailTemplate[] = [
     <div style="background: linear-gradient(135deg, #065f46, #047857); padding: 32px 24px; text-align: center; color: white;">
       <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #6ee7b7; font-family: sans-serif; font-weight: bold;">PRAYER CIRCLE & INTERCESSION</span>
       <h1 style="font-size: 24px; margin: 10px 0 4px 0;">${nl.Title}</h1>
-      <p style="font-size: 14px; margin: 0; color: #a7f3d0;">${nl.ScriptureReference}</p>
+      <p style="font-size: 14px; margin: 0; color: #a7f3d0; font-family: sans-serif; font-weight: bold;">
+        Bible Chapter & Verse: ${citation} (${book} ${chapter}:${verses})
+      </p>
     </div>
 
     <div style="padding: 28px; color: #064e3b; font-size: 15px; line-height: 1.7;">
       <div style="background-color: #ffffff; border-left: 4px solid #10b981; padding: 16px; border-radius: 8px; font-style: italic; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
         “${nl.ScriptureText}”
+        <div style="text-align: right; font-weight: bold; font-style: normal; font-size: 12px; margin-top: 6px; color: #047857;">
+          — ${citation}
+        </div>
       </div>
 
       <div style="background-color: #ffffff; border: 1px solid #d1fae5; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center; box-shadow: 0 4px 12px rgba(6, 78, 59, 0.06);">
@@ -190,7 +241,7 @@ export const NEWSLETTER_TEMPLATES: EmailTemplate[] = [
     </div>
 
     <div style="background-color: #065f46; padding: 16px; text-align: center; color: #a7f3d0; font-size: 12px; font-family: sans-serif;">
-      Word Embassy Intercession Circle • Sent to ${recipientEmail}
+      Living Word Embassy Intercession Circle • Sent to ${recipientEmail}
     </div>
   </div>
 </body>
@@ -218,7 +269,9 @@ export const NewsletterTemplateStudio: React.FC<NewsletterTemplateStudioProps> =
 }) => {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(NEWSLETTER_TEMPLATES[0].id);
   const [selectedNewsletterId, setSelectedNewsletterId] = useState<string>(
-    newsletters[0]?.NewsletterID || 'NL-2026-001'
+    newsletters.find((n) => n.Edition === 'DAILY_DEVOTIONAL')?.NewsletterID ||
+    newsletters[0]?.NewsletterID ||
+    'NL-2026-PSALM23'
   );
   const [selectedTargetGroup, setSelectedTargetGroup] = useState<string>('ALL');
   const [testRecipient, setTestRecipient] = useState<string>('omicroservices@gmail.com');
@@ -250,9 +303,9 @@ export const NewsletterTemplateStudio: React.FC<NewsletterTemplateStudioProps> =
     ? activeTemplate.renderHtml(activeNewsletter, testRecipient)
     : '';
 
-  const emailSubject = `🕊️ [Word Embassy] ${activeNewsletter?.Title || 'Devotional'} — ${activeNewsletter?.ScriptureReference || ''}`;
+  const emailSubject = `🕊️ [Living Word Embassy] ${activeNewsletter?.Title || 'Devotional'} — ${activeNewsletter?.ScriptureReference || ''}`;
 
-  const plainTextEmail = `WORD EMBASSY DEVOTIONAL
+  const plainTextEmail = `LIVING WORD EMBASSY DEVOTIONAL
 ${activeNewsletter?.Title}
 Scripture: ${activeNewsletter?.ScriptureReference}
 
@@ -280,7 +333,7 @@ ${activeNewsletter?.Prayer}
 
 ${activeNewsletter?.Closing}
 
-Word Embassy Editorial
+Living Word Embassy Editorial
 https://www.wordembassy.org | embassyword@gmail.com`;
 
   const gmailWebComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
@@ -290,13 +343,13 @@ https://www.wordembassy.org | embassyword@gmail.com`;
   // Generate ready-to-run Google Apps Script Code
   const generatedGasCode = `function sendWordEmbassyDevotional() {
   var recipientEmail = "${testRecipient}";
-  var subject = "🕊️ [Word Embassy] ${activeNewsletter?.Title?.replace(/"/g, '\\"')} — ${activeNewsletter?.ScriptureReference}";
+  var subject = "🕊️ [Living Word Embassy] ${activeNewsletter?.Title?.replace(/"/g, '\\"')} — ${activeNewsletter?.ScriptureReference}";
   
   var htmlBody = ${JSON.stringify(renderedHtml)};
 
   GmailApp.sendEmail(recipientEmail, subject, "Please view in an HTML email client.", {
     htmlBody: htmlBody,
-    name: "Word Embassy Editorial",
+    name: "Living Word Embassy Editorial",
     replyTo: "embassyword@gmail.com"
   });
 
@@ -458,7 +511,7 @@ https://www.wordembassy.org | embassyword@gmail.com`;
                 >
                   {newsletters.map((nl) => (
                     <option key={nl.NewsletterID} value={nl.NewsletterID}>
-                      {nl.Title} ({nl.ScriptureReference})
+                      {nl.Title} ({formatBibleCitation(nl.ScriptureReference, nl.BibleBook, nl.BibleChapter, nl.BibleVerses)})
                     </option>
                   ))}
                 </select>
@@ -742,7 +795,7 @@ https://www.wordembassy.org | embassyword@gmail.com`;
                   <span>Live Template Preview: {activeTemplate.name}</span>
                 </h3>
                 <p className="text-[11px] text-slate-400">
-                  Target: <span className="text-white font-semibold">{activeNewsletter?.Title}</span>
+                  Target: <span className="text-white font-semibold">{activeNewsletter?.Title}</span> • <span className="text-amber-400 font-bold">{formatBibleCitation(activeNewsletter?.ScriptureReference || '', activeNewsletter?.BibleBook, activeNewsletter?.BibleChapter, activeNewsletter?.BibleVerses)}</span>
                 </p>
               </div>
 

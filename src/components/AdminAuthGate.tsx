@@ -45,7 +45,7 @@ export const AdminAuthGate: React.FC<AdminAuthGateProps> = ({
 
   const googlePresetAccounts = [
     {
-      name: 'Word Embassy Lead Editor',
+      name: 'Living Word Embassy Lead Editor',
       email: 'embassyword@gmail.com',
       role: 'Super Administrator & Publisher',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
@@ -321,7 +321,7 @@ export const AdminAuthGate: React.FC<AdminAuthGateProps> = ({
 
         {/* Security Note Footer */}
         <p className="text-center text-xs text-slate-500">
-          Protected by Word Embassy Ministry Security Protocols • TLS 1.3 End-to-End
+          Protected by Living Word Embassy Ministry Security Protocols • TLS 1.3 End-to-End
         </p>
       </div>
     </div>

@@ -19,8 +19,11 @@ import {
   Send,
   Database,
   Search,
+  Code,
 } from 'lucide-react';
 import { Topic, Newsletter, Subscriber, EmailLog, SystemLog } from '../types';
+import { GoogleSheetsStudio } from './GoogleSheetsStudio';
+import { GoogleAppsScriptStudio } from './GoogleAppsScriptStudio';
 import {
   createMasterSpreadsheet,
   SpreadsheetInfo,
@@ -61,7 +64,7 @@ export const GoogleWorkspaceHub: React.FC<GoogleWorkspaceHubProps> = ({
   systemLogs,
   onAddLog,
 }) => {
-  const [subTab, setSubTab] = useState<'sheets' | 'docs' | 'forms' | 'tasks'>('sheets');
+  const [subTab, setSubTab] = useState<'sheets' | 'apps_script' | 'docs' | 'forms' | 'tasks'>('sheets');
   const [authStatus, setAuthStatus] = useState<string | null>(null);
 
   // Sheets state
@@ -83,7 +86,7 @@ export const GoogleWorkspaceHub: React.FC<GoogleWorkspaceHubProps> = ({
   const [formsList, setFormsList] = useState<FormItem[]>([
     {
       formId: 'form-prayer-01',
-      title: 'Word Embassy — Pastoral Prayer Requests & Intercession',
+      title: 'Living Word Embassy — Pastoral Prayer Requests & Intercession',
       description: 'Submit your confidential prayer requests and intercessory petitions.',
       responderUri: 'https://docs.google.com/forms/d/e/sample-prayer-form/viewform',
       editUri: 'https://docs.google.com/forms/d/sample-prayer-form/edit',
@@ -93,7 +96,7 @@ export const GoogleWorkspaceHub: React.FC<GoogleWorkspaceHubProps> = ({
     },
     {
       formId: 'form-feedback-01',
-      title: 'Word Embassy — Sunday Teaching & Video Devotional Feedback',
+      title: 'Living Word Embassy — Sunday Teaching & Video Devotional Feedback',
       description: 'Help us sharpen our weekly biblical expositions and multimedia video devotionals.',
       responderUri: 'https://docs.google.com/forms/d/e/sample-feedback-form/viewform',
       editUri: 'https://docs.google.com/forms/d/sample-feedback-form/edit',
@@ -137,7 +140,7 @@ export const GoogleWorkspaceHub: React.FC<GoogleWorkspaceHubProps> = ({
   const handleCreateMasterSheet = async () => {
     setIsCreatingSheet(true);
     try {
-      const res = await createMasterSpreadsheet('Word Embassy — Content & Subscriber Master', {
+      const res = await createMasterSpreadsheet('Living Word Embassy — Content & Subscriber Master', {
         topics,
         newsletters,
         subscribers,
@@ -186,7 +189,7 @@ export const GoogleWorkspaceHub: React.FC<GoogleWorkspaceHubProps> = ({
   const handleCreateNewForm = async () => {
     setIsCreatingForm(true);
     try {
-      let title = 'Word Embassy — ' + (
+      let title = 'Living Word Embassy — ' + (
         newFormType === 'PRAYER_REQUEST' ? 'Pastoral Prayer Requests' :
         newFormType === 'READER_FEEDBACK' ? 'Sunday Teaching Feedback' :
         newFormType === 'TOPIC_SUGGESTION' ? 'Topic & Scripture Suggestions' : 'Reader Testimonies'
@@ -270,6 +273,17 @@ export const GoogleWorkspaceHub: React.FC<GoogleWorkspaceHubProps> = ({
             <span>Google Sheets</span>
           </button>
           <button
+            onClick={() => setSubTab('apps_script')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+              subTab === 'apps_script'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Code className="w-4 h-4" />
+            <span>Apps Script</span>
+          </button>
+          <button
             onClick={() => setSubTab('docs')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
               subTab === 'docs'
@@ -309,158 +323,21 @@ export const GoogleWorkspaceHub: React.FC<GoogleWorkspaceHubProps> = ({
           SUB-TAB 1: GOOGLE SHEETS
           ========================================================================= */}
       {subTab === 'sheets' && (
-        <div className="space-y-6">
-          <div className="bg-slate-800/80 rounded-2xl p-6 border border-slate-700 space-y-5 shadow-lg">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="font-serif text-lg font-bold text-white flex items-center gap-2">
-                  <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
-                  <span>Master Editorial & Subscriber Google Sheet</span>
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Organizes topics, subscribers, email logs, video devotionals, and publication calendars across synchronized tabs.
-                </p>
-              </div>
+        <GoogleSheetsStudio
+          topics={topics}
+          newsletters={newsletters}
+          subscribers={subscribers}
+          emailLogs={emailLogs}
+          systemLogs={systemLogs}
+          onAddLog={onAddLog}
+        />
+      )}
 
-              <div className="flex items-center gap-2">
-                {!spreadsheet ? (
-                  <button
-                    onClick={handleCreateMasterSheet}
-                    disabled={isCreatingSheet}
-                    className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-md transition-all active:scale-95"
-                  >
-                    <Plus className={`w-4 h-4 ${isCreatingSheet ? 'animate-spin' : ''}`} />
-                    <span>{isCreatingSheet ? 'Provisioning Spreadsheet...' : 'Create Master Google Sheet'}</span>
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      onClick={handleSyncToSheets}
-                      disabled={isSyncingData}
-                      className="bg-slate-700 hover:bg-slate-600 text-emerald-300 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-emerald-500/30"
-                    >
-                      <RefreshCw className={`w-3.5 h-3.5 ${isSyncingData ? 'animate-spin' : ''}`} />
-                      <span>{isSyncingData ? 'Syncing...' : 'Sync Live Records'}</span>
-                    </button>
-                    <a
-                      href={spreadsheet.spreadsheetUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md"
-                    >
-                      <span>Open in Google Sheets</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {spreadsheet ? (
-              <div className="space-y-4">
-                {/* Tabs Selector */}
-                <div className="flex items-center gap-1.5 overflow-x-auto border-b border-slate-700/80 pb-2">
-                  {spreadsheet.sheets.map((s) => (
-                    <button
-                      key={s.sheetId}
-                      onClick={() => setSelectedSheetTab(s.title)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all whitespace-nowrap ${
-                        selectedSheetTab === s.title
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                          : 'bg-slate-900/60 text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      📑 {s.title}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Tab Content Preview */}
-                <div className="bg-slate-950 rounded-xl border border-slate-800 p-4 font-mono text-xs overflow-x-auto">
-                  {selectedSheetTab === 'Topics' && (
-                    <table className="w-full text-left">
-                      <thead className="text-slate-400 border-b border-slate-800">
-                        <tr>
-                          <th className="p-2">TopicID</th>
-                          <th className="p-2">Topic Title</th>
-                          <th className="p-2">Scripture</th>
-                          <th className="p-2">Theme</th>
-                          <th className="p-2">Priority</th>
-                          <th className="p-2">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-900">
-                        {topics.map((t) => (
-                          <tr key={t.TopicID} className="hover:bg-slate-900/40">
-                            <td className="p-2 text-amber-400">{t.TopicID}</td>
-                            <td className="p-2 text-white font-sans">{t.Topic}</td>
-                            <td className="p-2 text-slate-300">{t.Scripture}</td>
-                            <td className="p-2 text-slate-400">{t.Theme}</td>
-                            <td className="p-2 text-slate-400">{t.Priority}</td>
-                            <td className="p-2">
-                              <span className="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-emerald-300 border border-slate-700">
-                                {t.Status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
-
-                  {selectedSheetTab === 'Subscribers' && (
-                    <table className="w-full text-left">
-                      <thead className="text-slate-400 border-b border-slate-800">
-                        <tr>
-                          <th className="p-2">SubscriberID</th>
-                          <th className="p-2">Name</th>
-                          <th className="p-2">Email</th>
-                          <th className="p-2">Group</th>
-                          <th className="p-2">Subscribed Date</th>
-                          <th className="p-2">Status</th>
-                          <th className="p-2">Sent Count</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-900">
-                        {subscribers.map((s) => (
-                          <tr key={s.SubscriberID} className="hover:bg-slate-900/40">
-                            <td className="p-2 text-amber-400">{s.SubscriberID}</td>
-                            <td className="p-2 text-white font-sans">{s.Name}</td>
-                            <td className="p-2 text-slate-300">{s.Email}</td>
-                            <td className="p-2">
-                              <span className="bg-slate-800 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded text-[10px]">
-                                {s.Group || 'Weekly Devotional Readers'}
-                              </span>
-                            </td>
-                            <td className="p-2 text-slate-400">{s.DateSubscribed}</td>
-                            <td className="p-2 text-emerald-400">{s.Status}</td>
-                            <td className="p-2 text-slate-400">{s.SendCount}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
-
-                  {selectedSheetTab !== 'Topics' && selectedSheetTab !== 'Subscribers' && (
-                    <div className="p-6 text-center text-slate-400">
-                      <FileSpreadsheet className="w-8 h-8 mx-auto text-slate-600 mb-2" />
-                      <p>Sheet tab <strong>"{selectedSheetTab}"</strong> is synchronized with Google Sheets API.</p>
-                      <p className="text-[11px] text-slate-500 mt-1">Headers and automated append rules are active.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="bg-slate-950 p-8 rounded-xl border border-slate-800 text-center space-y-3">
-                <FileSpreadsheet className="w-12 h-12 text-emerald-500/50 mx-auto" />
-                <h4 className="font-serif text-lg font-bold text-white">No Master Google Sheet Connected Yet</h4>
-                <p className="text-xs text-slate-400 max-w-md mx-auto">
-                  Click "Create Master Google Sheet" to generate a pre-configured multi-tab spreadsheet in your Google Drive with live synchronization.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+      {/* =========================================================================
+          SUB-TAB: GOOGLE APPS SCRIPT
+          ========================================================================= */}
+      {subTab === 'apps_script' && (
+        <GoogleAppsScriptStudio onAddLog={onAddLog} />
       )}
 
       {/* =========================================================================
@@ -540,7 +417,7 @@ export const GoogleWorkspaceHub: React.FC<GoogleWorkspaceHubProps> = ({
                   {/* Formatted Doc Preview */}
                   <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 text-slate-300 font-sans text-xs space-y-4 max-h-[500px] overflow-y-auto">
                     <div className="border-b border-slate-800 pb-3">
-                      <div className="text-[10px] font-mono tracking-widest uppercase text-blue-400">WORD EMBASSY DIGITAL MINISTRIES</div>
+                      <div className="text-[10px] font-mono tracking-widest uppercase text-blue-400">LIVING WORD EMBASSY DIGITAL MINISTRIES</div>
                       <h2 className="font-serif text-lg font-bold text-white mt-1">{selectedDocNewsletter.Title}</h2>
                       <div className="text-xs text-slate-400 italic">Scripture: {selectedDocNewsletter.ScriptureReference}</div>
                     </div>

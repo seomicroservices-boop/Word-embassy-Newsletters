@@ -65,8 +65,8 @@ export const UnsubscribePage: React.FC<UnsubscribePageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] py-16 flex items-center justify-center">
-      <div className="max-w-lg w-full mx-4 bg-white rounded-3xl p-8 sm:p-10 border border-[#E2E8F0] shadow-md space-y-6 text-center">
+    <div className="min-h-screen bg-transparent py-16 flex items-center justify-center">
+      <div className="max-w-lg w-full mx-4 bg-white/95 backdrop-blur-xs rounded-3xl p-8 sm:p-10 border border-[#E2E8F0] shadow-md space-y-6 text-center">
         <div className="w-14 h-14 rounded-2xl bg-amber-50 text-[#B45309] flex items-center justify-center mx-auto border border-amber-200">
           <MailX className="w-7 h-7" />
         </div>
@@ -136,7 +136,7 @@ export const UnsubscribePage: React.FC<UnsubscribePageProps> = ({
               id="resubscribe-btn"
             >
               <RefreshCw className="w-4 h-4" />
-              <span>Resubscribe to Word Embassy</span>
+              <span>Resubscribe to Living Word Embassy</span>
             </button>
           </div>
         )}

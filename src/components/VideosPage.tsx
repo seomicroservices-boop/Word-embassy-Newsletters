@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Play, Video, Youtube, ExternalLink, Calendar, Eye, Sparkles } from 'lucide-react';
 import { VideoItem, Newsletter } from '../types';
+import { setStandardPageSEO, trackSEOEvent } from '../services/seoManager';
 
 interface VideosPageProps {
   videos: VideoItem[];
@@ -15,6 +16,16 @@ export const VideosPage: React.FC<VideosPageProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'veo' | 'shorts'>('all');
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    setStandardPageSEO(
+      'Biblical Video Devotionals & Expository Reels | Living Word Embassy',
+      'Watch Christian video devotionals, short reels, and scripture meditations with voice narration and theological summaries from Living Word Embassy.',
+      '/videos'
+    );
+    trackSEOEvent('page_view', { page: 'videos' });
+  }, []);
+
   const filteredVideos = videos.filter((v) => {
     if (activeTab === 'veo') return v.Type === 'Veo Devotional';
     if (activeTab === 'shorts') return v.Type === 'Short';
@@ -22,13 +33,13 @@ export const VideosPage: React.FC<VideosPageProps> = ({
   });
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] py-12">
+    <div className="min-h-screen bg-transparent py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Page Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4 mb-12">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100 text-red-700 text-xs font-semibold uppercase tracking-wider border border-red-200">
             <Youtube className="w-3.5 h-3.5" />
-            <span>Word Embassy Multimedia Channel</span>
+            <span>Living Word Embassy Multimedia Channel</span>
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl font-black text-[#1E293B] tracking-tight">
             Video Teachings & Veo Devotionals

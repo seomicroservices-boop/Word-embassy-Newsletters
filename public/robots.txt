@@ -1,0 +1,29 @@
+# Living Word Embassy Ministries - robots.txt
+# https://wordpastorai.com & https://www.wordembassy.org
+
+User-agent: *
+Allow: /
+Allow: /archive
+Allow: /videos
+Allow: /topics
+Allow: /pillar/*
+Allow: /newsletter/*
+Allow: /about
+Allow: /subscribe
+Allow: /editorial-policy
+Allow: /statement-of-faith
+Allow: /privacy
+Allow: /terms
+
+# Disallow private administration and backend API routes
+Disallow: /admin
+Disallow: /api/
+
+# Crawl-delay for polite indexation
+Crawl-delay: 1
+
+# XML Sitemaps
+Sitemap: https://wordpastorai.com/sitemap.xml
+Sitemap: https://www.wordembassy.org/sitemap.xml
+Sitemap: https://wordpastorai.com/sitemap-devotionals.xml
+Sitemap: https://wordpastorai.com/sitemap-pillars.xml

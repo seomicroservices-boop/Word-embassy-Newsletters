@@ -39,7 +39,7 @@ export interface FlowExecutionStepLog {
 }
 
 /**
- * Standard Omnichannel Word Embassy Pipeline
+ * Standard Omnichannel Living Word Embassy Pipeline
  */
 export const DEFAULT_OMNICHANNEL_WORKFLOW: WorkflowPipeline = {
   id: 'flow-omnichannel-01',
@@ -109,7 +109,7 @@ export const DEFAULT_OMNICHANNEL_WORKFLOW: WorkflowPipeline = {
       service: 'Cloud Storage',
       status: 'idle',
       icon: 'HardDrive',
-      config: { folderFormat: 'Word Embassy / Newsletters / {YEAR} / {MONTH - TITLE}' },
+      config: { folderFormat: 'Living Word Embassy / Newsletters / {YEAR} / {MONTH - TITLE}' },
     },
     {
       id: 'node-tasks',
@@ -119,7 +119,7 @@ export const DEFAULT_OMNICHANNEL_WORKFLOW: WorkflowPipeline = {
       service: 'Google Workspace',
       status: 'idle',
       icon: 'CheckSquare',
-      config: { taskList: 'Word Embassy Editorial Workflow', dueHoursFromNow: 48 },
+      config: { taskList: 'Living Word Embassy Editorial Workflow', dueHoursFromNow: 48 },
     },
     {
       id: 'node-forms',
@@ -149,7 +149,7 @@ export const DEFAULT_OMNICHANNEL_WORKFLOW: WorkflowPipeline = {
       service: 'Communications',
       status: 'idle',
       icon: 'Send',
-      config: { senderName: 'Word Embassy Ministries', sendBatchSize: 50 },
+      config: { senderName: 'Living Word Embassy Ministries', sendBatchSize: 50 },
     },
   ],
 };

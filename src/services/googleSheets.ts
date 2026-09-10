@@ -13,10 +13,10 @@ export interface SpreadsheetInfo {
 }
 
 /**
- * Create a comprehensive Word Embassy Master Spreadsheet in Google Sheets
+ * Create a comprehensive Living Word Embassy Master Spreadsheet in Google Sheets
  */
 export async function createMasterSpreadsheet(
-  title: string = 'Word Embassy — Content & Subscriber Master',
+  title: string = 'Living Word Embassy — Content & Subscriber Master',
   data?: {
     topics: Topic[];
     newsletters: Newsletter[];

@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
-import { Mail, CheckCircle2, ShieldCheck, Sparkles, BookOpen, Send, Eye } from 'lucide-react';
-import { Subscriber } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Mail, CheckCircle2, ShieldCheck, Sparkles, BookOpen, Send, Eye, Sun, Layers } from 'lucide-react';
+import { Subscriber, EditionPreference } from '../types';
+import { setStandardPageSEO, trackSEOEvent } from '../services/seoManager';
 
 interface SubscribePageProps {
-  onSubscribe: (name: string, email: string) => Subscriber;
+  onSubscribe: (
+    name: string,
+    email: string,
+    editionPreference?: 'ALL' | 'DAILY_DEVOTIONAL' | 'WEEKLY_EXEGESIS'
+  ) => Subscriber;
   onNavigate: (view: string, slug?: string) => void;
 }
 
@@ -13,19 +18,34 @@ export const SubscribePage: React.FC<SubscribePageProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [editionPreference, setEditionPreference] = useState<EditionPreference>('ALL');
   const [subscribedUser, setSubscribedUser] = useState<Subscriber | null>(null);
   const [showWelcomeEmailPreview, setShowWelcomeEmailPreview] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    setStandardPageSEO(
+      'Subscribe to Daily Devotionals & Exegesis | Living Word Embassy',
+      'Subscribe to Living Word Embassy for daily Christian devotionals, weekly scripture studies, and prayer guides. Free, zero spam, delivered directly to your inbox.',
+      '/subscribe'
+    );
+    trackSEOEvent('page_view', { page: 'subscribe' });
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    const subscriber = onSubscribe(name || 'Faithful Reader', email);
+    const subscriber = onSubscribe(name || 'Faithful Reader', email, editionPreference);
     setSubscribedUser(subscriber);
     setShowWelcomeEmailPreview(true);
+    trackSEOEvent('newsletter_signup', {
+      edition: editionPreference,
+      email: email,
+    });
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] py-12">
+    <div className="min-h-screen bg-transparent py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Page Header */}
         <div className="text-center space-y-4 max-w-2xl mx-auto">
@@ -34,10 +54,10 @@ export const SubscribePage: React.FC<SubscribePageProps> = ({
             <span>Join Our Global Community</span>
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl font-black text-[#1E293B] tracking-tight">
-            Subscribe to Word Embassy
+            Subscribe to Living Word Embassy
           </h1>
           <p className="text-base sm:text-lg text-slate-600 font-light">
-            Receive pure, biblically grounded scripture teachings, prayer guides, and multimedia devotionals delivered directly to your inbox every Wednesday.
+            Receive pure, biblically grounded scripture teachings, prayer guides, and multimedia devotionals. Choose your preferred publication stream below.
           </p>
         </div>
 
@@ -50,10 +70,18 @@ export const SubscribePage: React.FC<SubscribePageProps> = ({
               </div>
               <div className="space-y-2">
                 <h3 className="font-serif text-2xl font-bold text-[#1E293B]">
-                  Welcome to the Word Embassy Family!
+                  Welcome to the Living Word Embassy Family!
                 </h3>
                 <p className="text-sm text-slate-600">
-                  We have added <strong className="text-slate-800">{subscribedUser.Email}</strong> to our active subscriber list. A confirmation and welcome blessing has been generated for you.
+                  We have added <strong className="text-slate-800">{subscribedUser.Email}</strong> to our active subscriber list for{' '}
+                  <strong className="text-[#B45309]">
+                    {subscribedUser.EditionPreference === 'DAILY_DEVOTIONAL'
+                      ? 'Daily Devotionals (Tue–Sun)'
+                      : subscribedUser.EditionPreference === 'WEEKLY_EXEGESIS'
+                      ? 'Weekly Deep Exegesis (Mondays)'
+                      : 'All Editions (Daily + Weekly)'}
+                  </strong>
+                  . A confirmation and welcome blessing has been generated for you.
                 </p>
               </div>
 
@@ -104,6 +132,97 @@ export const SubscribePage: React.FC<SubscribePageProps> = ({
                     className="w-full px-4 py-3.5 text-sm text-slate-800 bg-slate-50 rounded-xl border border-slate-200 focus:outline-none focus:border-amber-400"
                   />
                 </div>
+
+                {/* Edition Preference Selection */}
+                <div className="space-y-2 pt-2">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Select Your Newsletter Preference
+                  </label>
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {/* Option 1: ALL */}
+                    <label
+                      className={`flex items-start gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                        editionPreference === 'ALL'
+                          ? 'bg-amber-500/10 border-[#B45309] ring-2 ring-amber-500/30'
+                          : 'bg-slate-50 border-slate-200 hover:border-amber-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="editionPreference"
+                        value="ALL"
+                        checked={editionPreference === 'ALL'}
+                        onChange={() => setEditionPreference('ALL')}
+                        className="mt-1 text-[#B45309] focus:ring-amber-500"
+                      />
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm text-[#1E293B]">Both Publications (Recommended)</span>
+                          <span className="bg-amber-100 text-[#B45309] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">All-Access</span>
+                        </div>
+                        <p className="text-xs text-slate-600 font-light">
+                          Receive the Daily Devotional (Tue–Sun mornings) AND the Weekly Deep Exegesis (Monday in-depth studies).
+                        </p>
+                      </div>
+                    </label>
+
+                    {/* Option 2: DAILY DEVOTIONAL ONLY */}
+                    <label
+                      className={`flex items-start gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                        editionPreference === 'DAILY_DEVOTIONAL'
+                          ? 'bg-amber-500/10 border-amber-500 ring-2 ring-amber-500/30'
+                          : 'bg-slate-50 border-slate-200 hover:border-amber-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="editionPreference"
+                        value="DAILY_DEVOTIONAL"
+                        checked={editionPreference === 'DAILY_DEVOTIONAL'}
+                        onChange={() => setEditionPreference('DAILY_DEVOTIONAL')}
+                        className="mt-1 text-[#B45309] focus:ring-amber-500"
+                      />
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <Sun className="w-3.5 h-3.5 text-amber-600" />
+                          <span className="font-bold text-sm text-[#1E293B]">Daily Devotional Only</span>
+                          <span className="bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Tue–Sun</span>
+                        </div>
+                        <p className="text-xs text-slate-600 font-light">
+                          Quick morning scripture verse, inspirational meditation, faith declarations, and prayers.
+                        </p>
+                      </div>
+                    </label>
+
+                    {/* Option 3: WEEKLY EXEGESIS ONLY */}
+                    <label
+                      className={`flex items-start gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                        editionPreference === 'WEEKLY_EXEGESIS'
+                          ? 'bg-indigo-500/10 border-indigo-600 ring-2 ring-indigo-500/30'
+                          : 'bg-slate-50 border-slate-200 hover:border-indigo-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="editionPreference"
+                        value="WEEKLY_EXEGESIS"
+                        checked={editionPreference === 'WEEKLY_EXEGESIS'}
+                        onChange={() => setEditionPreference('WEEKLY_EXEGESIS')}
+                        className="mt-1 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
+                          <span className="font-bold text-sm text-[#1E293B]">Weekly Deep Exegesis Only</span>
+                          <span className="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Mondays</span>
+                        </div>
+                        <p className="text-xs text-slate-600 font-light">
+                          Expository verse-by-verse studies, Hebrew/Greek roots, 3 structured pillars, infographics, and videos.
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
               </div>
 
               <button
@@ -121,6 +240,8 @@ export const SubscribePage: React.FC<SubscribePageProps> = ({
                 </span>
                 <span>•</span>
                 <span>No Spam Guarantee</span>
+                <span>•</span>
+                <span>1-Click Unsubscribe</span>
               </div>
             </form>
           )}
@@ -139,25 +260,35 @@ export const SubscribePage: React.FC<SubscribePageProps> = ({
             <div className="bg-[#FDFBF7] text-[#1E293B] p-6 rounded-xl border border-slate-200 space-y-4 font-sans text-sm">
               <div className="border-b border-slate-200 pb-3">
                 <h3 className="font-serif text-xl font-bold text-[#1E293B]">
-                  Welcome to Word Embassy Newsletter! 🕊️
+                  Welcome to Living Word Embassy! 🕊️
                 </h3>
                 <p className="text-xs text-[#B45309] font-medium mt-1">
-                  From: Word Embassy Editorial &lt;embassyword@gmail.com&gt;
+                  From: Living Word Embassy Editorial &lt;embassyword@gmail.com&gt;
                 </p>
               </div>
 
               <p>Dear {subscribedUser.Name},</p>
               <p>
-                Welcome to Word Embassy! We are blessed to have you in our worldwide family of readers seeking deeper intimacy with God and steady encouragement through His living Word.
+                Welcome to Living Word Embassy! We are blessed to have you in our worldwide family of readers seeking deeper intimacy with God and steady encouragement through His living Word.
               </p>
               <p>
-                Every Wednesday morning, you will receive our latest digital publication featuring in-depth scripture exposition, downloadable study infographics, and video devotionals.
+                {subscribedUser.EditionPreference === 'DAILY_DEVOTIONAL'
+                  ? 'You are enrolled in our Daily Devotional stream. Every morning (Tuesday through Sunday), you will receive a concise scripture meditation, daily declaration, and prayer to start your day strong.'
+                  : subscribedUser.EditionPreference === 'WEEKLY_EXEGESIS'
+                  ? 'You are enrolled in our Weekly Deep Exegesis stream. Every Monday morning, you will receive our comprehensive theological study featuring original Hebrew/Greek insights, key pillars, and multimedia.'
+                  : 'You are enrolled in All Living Word Embassy Editions! You will receive our Daily Devotionals (Tue–Sun mornings) as well as our Weekly Deep Exegesis (every Monday morning).'}
               </p>
 
               <div className="bg-[#FEF3C7] p-4 rounded-lg border border-[#FDE68A] text-xs space-y-1">
                 <strong>Your Subscriber Details:</strong>
                 <p>Subscriber ID: {subscribedUser.SubscriberID}</p>
-                <p>Cohort Group: {subscribedUser.Group || 'Weekly Devotional Readers'}</p>
+                <p>
+                  Edition Preference:{' '}
+                  <span className="font-bold text-[#B45309]">
+                    {subscribedUser.EditionPreference || 'ALL'}
+                  </span>
+                </p>
+                <p>Cohort Group: {subscribedUser.Group || 'All Editions Subscribers'}</p>
                 <p>Lead Editor: embassyword@gmail.com</p>
                 <p>Status: ACTIVE</p>
                 <p>Unsubscribe Security Token: {subscribedUser.UnsubscribeToken}</p>
@@ -174,7 +305,7 @@ export const SubscribePage: React.FC<SubscribePageProps> = ({
 
               <hr className="border-slate-200 my-3" />
               <p className="text-[10px] text-slate-400 text-center">
-                Word Embassy Ministries • You received this because you subscribed on our website.<br />
+                Living Word Embassy Ministries • You received this because you subscribed on our website.<br />
                 <button
                   onClick={() => onNavigate('unsubscribe', subscribedUser.UnsubscribeToken)}
                   className="text-slate-500 underline"

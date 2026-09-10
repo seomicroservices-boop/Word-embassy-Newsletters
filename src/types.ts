@@ -10,6 +10,44 @@ export type TopicStatus =
   | 'PUBLISHED'
   | 'FAILED';
 
+export type NewsletterEdition = 'DAILY_DEVOTIONAL' | 'WEEKLY_EXEGESIS';
+
+export type EditionPreference = 'ALL' | 'DAILY_DEVOTIONAL' | 'WEEKLY_EXEGESIS';
+
+export interface NewsletterEditionInfo {
+  id: NewsletterEdition;
+  name: string;
+  subtitle: string;
+  frequency: string;
+  badge: string;
+  color: string;
+  description: string;
+  iconName: string;
+}
+
+export const NEWSLETTER_EDITIONS: Record<NewsletterEdition, NewsletterEditionInfo> = {
+  DAILY_DEVOTIONAL: {
+    id: 'DAILY_DEVOTIONAL',
+    name: 'Daily Devotional',
+    subtitle: 'Morning Grace & Daily Manna',
+    frequency: 'Daily (Tue–Sun)',
+    badge: '☀️ Daily Devotional',
+    color: 'amber',
+    description: '5-minute scripture study, morning prayer points, daily declarations, and practical faith encouragement to start each day strong.',
+    iconName: 'Sun',
+  },
+  WEEKLY_EXEGESIS: {
+    id: 'WEEKLY_EXEGESIS',
+    name: 'Weekly Deep Exegesis',
+    subtitle: 'Kingdom Leadership & Expository Studies',
+    frequency: 'Weekly (Mondays)',
+    badge: '📖 Weekly Deep Exegesis',
+    color: 'indigo',
+    description: 'Comprehensive theological exposition, original Greek/Hebrew exegetical insights, leadership principles, infographics, and companion video studies.',
+    iconName: 'BookOpen',
+  },
+};
+
 export type EmailCampaignStatus =
   | 'NOT_SENT'
   | 'QUEUED'
@@ -34,6 +72,7 @@ export interface Topic {
   PublishDate: string;
   Priority: 'HIGH' | 'MEDIUM' | 'LOW';
   Status: TopicStatus;
+  Edition?: NewsletterEdition;
   CreatedAt: string;
   UpdatedAt: string;
 }
@@ -43,13 +82,26 @@ export interface KeyPoint {
   content: string;
 }
 
+export interface BibleVerseItem {
+  verseNumber: number | string;
+  verseText: string;
+}
+
 export interface Newsletter {
   NewsletterID: string;
   TopicID: string;
+  Edition?: NewsletterEdition;
   Title: string;
   Slug: string;
   ScriptureReference: string;
   ScriptureText: string;
+  // Bible Chapter & Verses breakdown fields
+  BibleBook?: string;
+  BibleChapter?: number | string;
+  BibleVerses?: string;
+  BibleTranslation?: string;
+  FullChapterContext?: string;
+  VersesBreakdown?: BibleVerseItem[];
   Theme: string;
   Opening: string;
   Teaching: string;
@@ -68,9 +120,14 @@ export interface Newsletter {
   GoogleDocURL: string;
   VideoURL: string;
   YouTubeURL: string;
+  AudioURL?: string;
+  AudioNarrationDuration?: string;
+  AudioVoice?: string;
+  AudioTranscript?: string;
   MetaTitle: string;
   MetaDescription: string;
   Keywords?: string[];
+  CanonicalURL?: string;
   PublishDate: string;
   Status: TopicStatus;
   
@@ -120,6 +177,7 @@ export interface Subscriber {
   Source: string;
   UnsubscribeToken: string;
   Group?: string;
+  EditionPreference?: 'ALL' | 'DAILY_DEVOTIONAL' | 'WEEKLY_EXEGESIS';
   LastNewsletterID?: string;
   LastEmailSent?: string;
   EmailStatus?: string;
@@ -142,6 +200,8 @@ export interface VideoItem {
   NewsletterID?: string;
   Title: string;
   Description: string;
+  ScriptureReference?: string;
+  ScriptureText?: string;
   ThumbnailURL: string;
   YouTubeURL: string;
   Duration: string;

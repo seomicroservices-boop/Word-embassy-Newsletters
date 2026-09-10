@@ -1,11 +1,13 @@
 import React from 'react';
-import { BookOpen, Shield, Video, Archive, Info, Sparkles, Mail, Database } from 'lucide-react';
+import { BookOpen, Shield, Video, Archive, Info, Sparkles, Mail, Database, Mountain, Layers } from 'lucide-react';
 
 interface NavbarProps {
   currentView: string;
   onNavigate: (view: string, slug?: string) => void;
   isAdmin: boolean;
   onToggleAdmin: () => void;
+  currentSceneryTitle?: string;
+  onCycleScenery?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -13,13 +15,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigate,
   isAdmin,
   onToggleAdmin,
+  currentSceneryTitle,
+  onCycleScenery,
 }) => {
   return (
     <header className="sticky top-0 z-50 bg-[#FDFBF7]/95 backdrop-blur-md border-b border-[#E2E8F0] shadow-xs">
       {/* Top Banner Notice */}
       <div className="bg-[#1E293B] text-slate-200 text-xs py-1.5 px-4 text-center tracking-wide font-medium flex items-center justify-center gap-2">
         <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-        <span>WORD EMBASSY DIGITAL MINISTRY • BIBLE TEACHING • FAITH • PRAYER</span>
+        <span>LIVING WORD EMBASSY DIGITAL MINISTRY • BIBLE TEACHING • FAITH • PRAYER</span>
         <button
           onClick={onToggleAdmin}
           className="ml-3 text-[11px] bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 px-2 py-0.5 rounded border border-amber-400/40 transition-colors flex items-center gap-1 font-semibold"
@@ -44,7 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div>
               <div className="font-serif text-2xl font-bold text-[#1E293B] tracking-tight flex items-center gap-1.5">
-                <span>WORD EMBASSY</span>
+                <span>LIVING WORD EMBASSY</span>
                 <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-[#B45309] font-sans font-semibold">
                   NEWSLETTER
                 </span>
@@ -78,6 +82,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="nav-latest-btn"
             >
               Latest Edition
+            </button>
+            <button
+              onClick={() => onNavigate('topics')}
+              className={`px-3.5 py-2 rounded-md transition-colors flex items-center gap-1.5 ${
+                currentView === 'topics' || currentView === 'pillar'
+                  ? 'bg-amber-50 text-[#B45309] font-semibold'
+                  : 'hover:bg-slate-100 text-slate-700'
+              }`}
+              id="nav-topics-btn"
+            >
+              <Layers className="w-4 h-4 text-slate-400" />
+              Topics & Pillars
             </button>
             <button
               onClick={() => onNavigate('archive')}
@@ -118,7 +134,22 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
 
           {/* Action CTAs */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {onCycleScenery && (
+              <button
+                onClick={onCycleScenery}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-amber-300/70 bg-amber-50/80 hover:bg-amber-100 text-amber-900 text-xs font-semibold transition-all shadow-2xs group"
+                id="nav-scenery-cycle-btn"
+                title="Change Natural Scenery Backdrop"
+              >
+                <Mountain className="w-3.5 h-3.5 text-amber-700 group-hover:scale-110 transition-transform" />
+                <span className="hidden lg:inline text-amber-950 font-bold">
+                  {currentSceneryTitle ? currentSceneryTitle.split('&')[0].trim() : 'Scenery'}
+                </span>
+                <span className="lg:hidden hidden sm:inline">Scenery</span>
+              </button>
+            )}
+
             <button
               onClick={() => onNavigate('subscribe')}
               className="bg-[#B45309] hover:bg-[#92400E] text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-xs flex items-center gap-2 transition-transform active:scale-95"

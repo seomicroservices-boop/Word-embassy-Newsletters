@@ -3,13 +3,14 @@ import { BookOpen, Mail, ExternalLink, ShieldCheck, Youtube, Facebook, Users, Tv
 
 interface FooterProps {
   onNavigate: (view: string, slug?: string) => void;
-  onOpenAdmin: () => void;
+  onOpenAdmin?: () => void;
+  latestNewsletters?: unknown[];
 }
 
 export const OFFICIAL_CHANNELS = [
   {
     id: 'yt-main',
-    name: 'Word Embassy YouTube Channel',
+    name: 'Living Word Embassy YouTube Channel',
     category: 'YouTube Channel',
     url: 'https://www.youtube.com/channel/UCAsSQvaTy6ZUPpLeLjbOA6g',
     description: 'Devotionals, multimedia video series & weekly word',
@@ -18,7 +19,7 @@ export const OFFICIAL_CHANNELS = [
   },
   {
     id: 'yt-secondary',
-    name: 'Word Embassy Broadcasts',
+    name: 'Living Word Embassy Broadcasts',
     category: 'YouTube Broadcasts',
     url: 'https://www.youtube.com/channel/UCymieOPsE0wPoPjS-vC57LA',
     description: 'Pastoral teachings, scripture studies & ministry archives',
@@ -27,7 +28,7 @@ export const OFFICIAL_CHANNELS = [
   },
   {
     id: 'tiktok-main',
-    name: 'Word Embassy TikTok',
+    name: 'Living Word Embassy TikTok',
     category: 'TikTok Shorts & Reels',
     url: 'https://www.tiktok.com/@paulinefaith67?_r=1&_t=ZT-99IFvhsT9w6',
     description: 'Daily faith moments, short devotionals & inspiring messages',
@@ -36,7 +37,7 @@ export const OFFICIAL_CHANNELS = [
   },
   {
     id: 'instagram-main',
-    name: 'Word Embassy Instagram',
+    name: 'Living Word Embassy Instagram',
     category: 'Instagram Visual Word',
     url: 'https://www.instagram.com/embassyword02/',
     description: 'Scripture art, daily quotes, reels & faith inspiration',
@@ -45,7 +46,7 @@ export const OFFICIAL_CHANNELS = [
   },
   {
     id: 'x-twitter-main',
-    name: 'Word Embassy X (Twitter)',
+    name: 'Living Word Embassy X (Twitter)',
     category: 'X / Twitter Feed',
     url: 'https://x.com/Wordembass76269',
     description: 'Daily scripture declarations, threads & ministry alerts',
@@ -54,7 +55,7 @@ export const OFFICIAL_CHANNELS = [
   },
   {
     id: 'fb-page',
-    name: 'Word Embassy Facebook Page',
+    name: 'Living Word Embassy Facebook Page',
     category: 'Official Page',
     url: 'https://www.facebook.com/profile.php?id=61570922167817',
     description: 'Daily scripture updates, ministry news & announcements',
@@ -63,7 +64,7 @@ export const OFFICIAL_CHANNELS = [
   },
   {
     id: 'fb-group',
-    name: 'Word Embassy Fellowship Group',
+    name: 'Living Word Embassy Fellowship Group',
     category: 'Community Group',
     url: 'https://www.facebook.com/groups/1421329093238399',
     description: 'Prayer requests, discussions & ambassador fellowship',
@@ -73,8 +74,20 @@ export const OFFICIAL_CHANNELS = [
 ];
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
+  const handleAdminClick = () => {
+    if (onOpenAdmin) {
+      onOpenAdmin();
+    } else {
+      onNavigate('admin');
+    }
+  };
+
   return (
-    <footer className="bg-[#1E293B] text-slate-300 border-t border-slate-700/60 pt-16 pb-12 mt-20" id="site-footer">
+    <footer
+      className="relative z-20 bg-slate-900 text-slate-100 border-t border-slate-800 pt-16 pb-12 mt-20 shadow-2xl"
+      style={{ backgroundColor: '#0f172a' }}
+      id="site-footer"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-slate-700/60">
           {/* Col 1: Mission & Brand */}
@@ -85,7 +98,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
               </div>
               <div>
                 <span className="font-serif text-2xl font-bold text-white tracking-tight">
-                  WORD EMBASSY
+                  LIVING WORD EMBASSY
                 </span>
                 <span className="block text-xs text-amber-400/90 font-medium tracking-wide">
                   Bible Teaching • Faith • Prayer
@@ -93,7 +106,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
               </div>
             </div>
             <p className="text-sm text-slate-300 leading-relaxed font-light">
-              Word Embassy is dedicated to publishing clear, reverent, and biblically sound devotional teachings, multimedia devotionals, and practical encouragement to strengthen your daily walk with the Lord Jesus Christ.
+              Living Word Embassy is dedicated to publishing clear, reverent, and biblically sound devotional teachings, multimedia devotionals, and practical encouragement to strengthen your daily walk with the Lord Jesus Christ.
             </p>
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 pt-2">
               <span className="flex items-center gap-1 text-emerald-400">
@@ -104,27 +117,43 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
             </div>
           </div>
 
-          {/* Col 2: Publication Links */}
+          {/* Col 2: Scripture Pillars & Publications */}
           <div>
             <h4 className="font-serif text-white font-semibold text-base mb-4 tracking-wide flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-amber-400" />
-              <span>Publication Links</span>
+              <span>Scripture Pillars & Studies</span>
             </h4>
             <ul className="space-y-2.5 text-sm">
               <li>
                 <button
-                  onClick={() => onNavigate('home')}
-                  className="hover:text-amber-400 transition-colors text-slate-300 flex items-center gap-1.5 text-left"
+                  onClick={() => onNavigate('topics')}
+                  className="hover:text-amber-400 transition-colors text-amber-300 font-semibold flex items-center gap-1.5 text-left"
                 >
-                  <span>Home Page</span>
+                  <span>→ Theological Pillars Hub</span>
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => onNavigate('newsletter', 'the-power-of-persistent-prayer')}
+                  onClick={() => onNavigate('pillar', 'divine-protection')}
                   className="hover:text-amber-400 transition-colors text-slate-300 flex items-center gap-1.5 text-left"
                 >
-                  <span>Latest Newsletter</span>
+                  <span>Divine Protection (Psalm 91)</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onNavigate('pillar', 'supernatural-peace')}
+                  className="hover:text-amber-400 transition-colors text-slate-300 flex items-center gap-1.5 text-left"
+                >
+                  <span>Supernatural Peace</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onNavigate('pillar', 'persistent-prayer')}
+                  className="hover:text-amber-400 transition-colors text-slate-300 flex items-center gap-1.5 text-left"
+                >
+                  <span>Persistent Prayer Doctrine</span>
                 </button>
               </li>
               <li>
@@ -132,7 +161,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
                   onClick={() => onNavigate('archive')}
                   className="hover:text-amber-400 transition-colors text-slate-300 flex items-center gap-1.5 text-left"
                 >
-                  <span>Newsletter Archive</span>
+                  <span>Complete Devotionals Archive</span>
                 </button>
               </li>
               <li>
@@ -141,14 +170,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
                   className="hover:text-amber-400 transition-colors text-slate-300 flex items-center gap-1.5 text-left"
                 >
                   <span>Video Devotionals</span>
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => onNavigate('about')}
-                  className="hover:text-amber-400 transition-colors text-slate-300 flex items-center gap-1.5 text-left"
-                >
-                  <span>About & Statement of Faith</span>
                 </button>
               </li>
             </ul>
@@ -191,32 +212,56 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
             </ul>
           </div>
 
-          {/* Col 4: Reader Care & Administration */}
+          {/* Col 4: Reader Care, E-E-A-T Trust & Governance */}
           <div>
             <h4 className="font-serif text-white font-semibold text-base mb-4 tracking-wide flex items-center gap-2">
-              <Mail className="w-4 h-4 text-amber-400" />
-              <span>Reader Care & Tech</span>
+              <ShieldCheck className="w-4 h-4 text-amber-400" />
+              <span>Trust, Faith & Standards</span>
             </h4>
             <ul className="space-y-2.5 text-sm">
               <li>
                 <button
-                  onClick={() => onNavigate('subscribe')}
+                  onClick={() => onNavigate('statement-of-faith')}
                   className="hover:text-amber-400 transition-colors text-slate-300 flex items-center gap-1.5"
                 >
-                  <Mail className="w-3.5 h-3.5 text-amber-400" /> Subscribe to Newsletter
+                  Statement of Faith (Orthodoxy)
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => onNavigate('unsubscribe')}
-                  className="hover:text-slate-400 transition-colors text-slate-400 text-xs"
+                  onClick={() => onNavigate('editorial-policy')}
+                  className="hover:text-amber-400 transition-colors text-slate-300 flex items-center gap-1.5"
                 >
-                  Manage / Unsubscribe
+                  Editorial & Exegesis Policy
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onNavigate('about')}
+                  className="hover:text-amber-400 transition-colors text-slate-300 flex items-center gap-1.5"
+                >
+                  About the Pastoral Council
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onNavigate('privacy')}
+                  className="hover:text-amber-400 transition-colors text-slate-300 flex items-center gap-1.5"
+                >
+                  Privacy & Subscriber Safety
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onNavigate('terms')}
+                  className="hover:text-amber-400 transition-colors text-slate-300 flex items-center gap-1.5"
+                >
+                  Terms of Use & Ministry Rights
                 </button>
               </li>
               <li className="pt-2 border-t border-slate-700/50">
                 <button
-                  onClick={onOpenAdmin}
+                  onClick={handleAdminClick}
                   className="text-xs bg-slate-800 hover:bg-slate-700 text-amber-300 px-3 py-1.5 rounded border border-slate-600 transition-colors flex items-center gap-1.5 font-medium"
                   id="footer-admin-login-btn"
                   title="Admin Login & Editorial Control Center"
@@ -228,10 +273,17 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
               </li>
             </ul>
 
-            <div className="mt-5 p-3 rounded-lg bg-slate-800/60 border border-slate-700/50">
-              <p className="text-[11px] text-slate-400 leading-relaxed">
-                Connect with our community on YouTube & Facebook for live prayer and daily words.
-              </p>
+            <div className="mt-4 p-3 rounded-lg bg-slate-800/60 border border-slate-700/50 space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
+                Direct Pastoral Desk:
+              </span>
+              <a
+                href="mailto:embassyword@gmail.com"
+                className="text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors"
+              >
+                <Mail className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>embassyword@gmail.com</span>
+              </a>
             </div>
           </div>
         </div>
@@ -315,13 +367,29 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
           </div>
         </div>
 
-        {/* Bottom copyright & verse */}
+        {/* Bottom copyright, verse & legal links */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-slate-400 gap-4">
           <p className="font-scripture italic text-slate-300 text-center md:text-left">
             “Your word is a lamp for my feet, a light on my path.” — Psalm 119:105
           </p>
-          <div className="flex items-center gap-1 text-slate-400">
-            <span>© {new Date().getFullYear()} Word Embassy Ministries. All rights reserved.</span>
+          <div className="flex flex-wrap items-center justify-center gap-3 text-slate-400">
+            <span>© {new Date().getFullYear()} Living Word Embassy Ministries.</span>
+            <span>•</span>
+            <button onClick={() => onNavigate('statement-of-faith')} className="hover:text-amber-400">
+              Faith
+            </button>
+            <span>•</span>
+            <button onClick={() => onNavigate('editorial-policy')} className="hover:text-amber-400">
+              Editorial Policy
+            </button>
+            <span>•</span>
+            <button onClick={() => onNavigate('privacy')} className="hover:text-amber-400">
+              Privacy
+            </button>
+            <span>•</span>
+            <button onClick={() => onNavigate('terms')} className="hover:text-amber-400">
+              Terms
+            </button>
           </div>
         </div>
       </div>

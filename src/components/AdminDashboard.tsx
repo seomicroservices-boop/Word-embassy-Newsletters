@@ -47,7 +47,18 @@ import {
   MailCheck,
   LogOut,
   Loader2,
+  Bookmark,
+  Video,
+  Terminal,
+  Globe,
+  Target,
 } from 'lucide-react';
+import {
+  CREATOMATE_CONFIG,
+  buildDevotionalCreatomatePayload,
+  generateCreatomateCurlCommand,
+  getSampleCreatomateCurl,
+} from '../services/creatomateService';
 import {
   Topic,
   Newsletter,
@@ -59,6 +70,13 @@ import {
   AppSettings,
   TopicStatus,
 } from '../types';
+import {
+  parseScriptureReference,
+  formatBibleCitation,
+  getVersesBreakdown,
+  getChapterContext,
+  getBibleStudyLinks,
+} from '../services/bibleScripture';
 import {
   saveNewsletterPackageToDrive,
   DriveFolderStructure,
@@ -74,9 +92,13 @@ import { initAuth, googleSignIn, logout as googleLogout, getAccessToken } from '
 import { InfographicCanvas } from './InfographicCanvas';
 import { VeoVideoPlayer } from './VeoVideoPlayer';
 import { GoogleWorkspaceHub } from './GoogleWorkspaceHub';
+import { GoogleSheetsStudio } from './GoogleSheetsStudio';
+import { GoogleAppsScriptStudio } from './GoogleAppsScriptStudio';
 import { NotebookLlmWorkspace } from './NotebookLlmWorkspace';
 import { GoogleFlowCanvas } from './GoogleFlowCanvas';
 import { NewsletterTemplateStudio } from './NewsletterTemplateStudio';
+import { AdminSeoConfigPanel } from './AdminSeoConfigPanel';
+import { AdminKeywordOpportunity } from './AdminKeywordOpportunity';
 
 interface AdminDashboardProps {
   topics: Topic[];
@@ -148,6 +170,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     | 'flow'
     | 'topics'
     | 'newsletters'
+    | 'keywords'
+    | 'KeywordOpportunity'
+    | 'seo'
     | 'sheets'
     | 'drive'
     | 'email'
@@ -162,8 +187,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [showAddTopicModal, setShowAddTopicModal] = useState(false);
   const [newTopicData, setNewTopicData] = useState({
     Topic: '',
-    Scripture: '',
+    Scripture: 'Psalm 23: 1',
+    BibleBook: 'Psalm',
+    BibleChapter: '23',
+    BibleVerses: '1',
     Theme: 'Faith & Prayer',
+    Edition: 'DAILY_DEVOTIONAL' as 'DAILY_DEVOTIONAL' | 'WEEKLY_EXEGESIS',
     Notes: '',
     Priority: 'HIGH' as 'HIGH' | 'MEDIUM' | 'LOW',
     PublishDate: new Date().toISOString().split('T')[0],
@@ -173,7 +202,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     null
   );
   const [selectedReviewTab, setSelectedReviewTab] = useState<
-    'article' | 'social' | 'youtube' | 'prompts' | 'infographic'
+    'article' | 'scripture' | 'social' | 'youtube' | 'prompts' | 'infographic'
   >('article');
 
   // Google Sheets Simulator active tab
@@ -399,12 +428,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleAddTopicSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTopicData.Topic || !newTopicData.Scripture) return;
-    onAddTopic(newTopicData);
+    const parsed = parseScriptureReference(newTopicData.Scripture);
+    const book = newTopicData.BibleBook || parsed.book;
+    const chapter = newTopicData.BibleChapter || parsed.chapter;
+    const verses = newTopicData.BibleVerses || parsed.verses;
+    const fullCitation = `${book} ${chapter}: ${verses}`.trim();
+
+    onAddTopic({
+      ...newTopicData,
+      Scripture: fullCitation || newTopicData.Scripture,
+    });
     setShowAddTopicModal(false);
     setNewTopicData({
       Topic: '',
-      Scripture: '',
+      Scripture: 'Psalm 23: 1',
+      BibleBook: 'Psalm',
+      BibleChapter: '23',
+      BibleVerses: '1',
       Theme: 'Faith & Prayer',
+      Edition: 'DAILY_DEVOTIONAL',
       Notes: '',
       Priority: 'HIGH',
       PublishDate: new Date().toISOString().split('T')[0],
@@ -462,7 +504,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="font-serif text-lg font-bold text-white tracking-tight">
-                  WORD EMBASSY
+                  LIVING WORD EMBASSY
                 </h1>
                 <span className="text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30 px-2 py-0.5 rounded-full uppercase">
                   Google-Stack Engine
@@ -504,6 +546,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Topic</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('social')}
+              className="bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors"
+              id="admin-quick-social-studio-btn"
+              title="Open Social Media & Video Studio"
+            >
+              <Share2 className="w-3.5 h-3.5 text-amber-400" />
+              <span>Social & Video Studio</span>
             </button>
 
             <button
@@ -585,7 +637,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="max-w-7xl mx-auto flex items-center gap-1 py-1.5">
           {[
             { id: 'overview', label: 'Overview & Metrics', icon: Layers },
-            { id: 'templates', label: '✦ Newsletter Templates & Broadcast', icon: Sparkles },
+            { id: 'social', label: '✦ Social & Video Studio', icon: Share2, highlight: true },
+            { id: 'templates', label: 'Newsletter Templates & Broadcast', icon: Sparkles },
             { id: 'workspace', label: 'Google Workspace (Sheets/Docs/Forms/Tasks)', icon: FileSpreadsheet },
             { id: 'subscribers', label: `Subscribers & Groups (${subscribers.length})`, icon: Users },
             { id: 'notebook', label: 'NotebookLM Studio', icon: BookOpen },
@@ -593,16 +646,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             { id: 'drive', label: 'Google Drive Storage', icon: FolderSync },
             { id: 'topics', label: `Topics (${topics.length})`, icon: FileText },
             { id: 'newsletters', label: `Newsletters (${newsletters.length})`, icon: BookOpen },
+            { id: 'KeywordOpportunity', label: 'Keyword Opportunity', icon: Target },
+            { id: 'seo', label: 'SEO Configuration', icon: Globe },
             { id: 'sheets', label: '10-Sheets Schema', icon: FileSpreadsheet },
             { id: 'email', label: 'Email Campaigns', icon: Mail },
-            { id: 'social', label: 'Social & Video Studio', icon: Share2 },
             { id: 'gas', label: 'Apps Script (.gs)', icon: Code },
             { id: 'analytics', label: 'Analytics & Looker', icon: BarChart3 },
             { id: 'logs', label: `Logs (${systemLogs.length})`, icon: AlertTriangle },
             { id: 'settings', label: 'Settings', icon: Settings },
           ].map((tab) => {
             const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
+            const isActive =
+              activeTab === tab.id ||
+              (tab.id === 'KeywordOpportunity' && (activeTab === 'KeywordOpportunity' || activeTab === 'keywords'));
             return (
               <button
                 key={tab.id}
@@ -610,9 +666,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 className={`px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 whitespace-nowrap transition-colors ${
                   isActive
                     ? 'bg-amber-500 text-slate-950 shadow-xs'
+                    : tab.highlight
+                    ? 'text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
                 }`}
-                id={`admin-tab-${tab.id}`}
+                id={tab.id === 'KeywordOpportunity' ? 'admin-tab-KeywordOpportunity' : `admin-tab-${tab.id}`}
+                data-testid={tab.id === 'KeywordOpportunity' ? 'tab-KeywordOpportunity' : undefined}
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{tab.label}</span>
@@ -649,24 +708,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {/* 7-Step Pipeline Diagram */}
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 pt-2">
                 {[
-                  { step: '1. Topic In Sheet', desc: 'Google Sheets DB', icon: FileSpreadsheet, active: true },
-                  { step: '2. Gemini 3.7 Flash', desc: 'Theological Schema', icon: Sparkles, active: true },
-                  { step: '3. Media Studio', desc: 'Image, Info, Veo', icon: Layers, active: true },
-                  { step: '4. Editorial Review', desc: 'Approval Guardrail', icon: CheckCircle2, active: true },
-                  { step: '5. Google Drive', desc: 'Auto-Organized Year/Month', icon: FolderSync, active: true },
-                  { step: '6. Batch Email', desc: 'Gmail / MailApp', icon: Mail, active: true },
-                  { step: '7. YouTube & Web', desc: 'Auto-Published', icon: Share2, active: true },
+                  { step: '1. Topic In Sheet', desc: 'Google Sheets DB', icon: FileSpreadsheet, tab: 'topics' },
+                  { step: '2. Gemini 3.7 Flash', desc: 'Theological Schema', icon: Sparkles, tab: 'newsletters' },
+                  { step: '3. Media Studio', desc: 'Image, Info, Veo', icon: Layers, tab: 'social' },
+                  { step: '4. Editorial Review', desc: 'Approval Guardrail', icon: CheckCircle2, tab: 'newsletters' },
+                  { step: '5. Google Drive', desc: 'Auto-Organized Year/Month', icon: FolderSync, tab: 'drive' },
+                  { step: '6. Batch Email', desc: 'Gmail / MailApp', icon: Mail, tab: 'email' },
+                  { step: '7. YouTube & Web', desc: 'Auto-Published', icon: Share2, tab: 'social' },
                 ].map((item, idx) => {
                   const StepIcon = item.icon;
                   return (
-                    <div
+                    <button
                       key={idx}
-                      className="bg-slate-900/90 p-3.5 rounded-xl border border-slate-700/80 text-center space-y-1.5"
+                      onClick={() => setActiveTab(item.tab as any)}
+                      className="bg-slate-900/90 hover:bg-slate-800 p-3.5 rounded-xl border border-slate-700/80 hover:border-amber-500/50 text-center space-y-1.5 transition-all duration-200 group cursor-pointer active:scale-95 text-left w-full"
+                      title={`Open ${item.step} (${item.desc})`}
                     >
-                      <StepIcon className="w-5 h-5 text-amber-400 mx-auto" />
-                      <div className="font-bold text-xs text-white leading-tight">{item.step}</div>
-                      <div className="text-[10px] text-slate-400">{item.desc}</div>
-                    </div>
+                      <StepIcon className="w-5 h-5 text-amber-400 group-hover:text-amber-300 mx-auto transition-colors" />
+                      <div className="font-bold text-xs text-white group-hover:text-amber-300 leading-tight transition-colors text-center">{item.step}</div>
+                      <div className="text-[10px] text-slate-400 group-hover:text-slate-300 text-center">{item.desc}</div>
+                    </button>
                   );
                 })}
               </div>
@@ -1198,6 +1259,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
               <div className="flex items-center gap-2">
                 <button
+                  onClick={() => setActiveTab('keywords')}
+                  className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors"
+                  id="topics-to-keyword-opp-btn"
+                >
+                  <Target className="w-4 h-4 text-amber-400" />
+                  <span>Keyword Opportunities</span>
+                </button>
+                <button
                   onClick={() => setShowAddTopicModal(true)}
                   className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-1.5 shadow-xs"
                 >
@@ -1223,6 +1292,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <tr>
                       <th className="p-4">Topic ID</th>
                       <th className="p-4">Topic & Scripture</th>
+                      <th className="p-4">Edition</th>
                       <th className="p-4">Theme</th>
                       <th className="p-4">Priority</th>
                       <th className="p-4">Status</th>
@@ -1238,6 +1308,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           <div className="font-bold text-white text-sm">{t.Topic}</div>
                           <div className="text-amber-400 text-xs font-serif">{t.Scripture}</div>
                           {t.Notes && <div className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">{t.Notes}</div>}
+                        </td>
+                        <td className="p-4">
+                          <span
+                            className={`px-2 py-1 rounded text-[10px] font-bold ${
+                              t.Edition === 'DAILY_DEVOTIONAL'
+                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                            }`}
+                          >
+                            {t.Edition === 'DAILY_DEVOTIONAL' ? '☀️ Daily (Tue–Sun)' : '📖 Weekly (Mon)'}
+                          </span>
                         </td>
                         <td className="p-4">
                           <span className="bg-slate-900 px-2 py-1 rounded text-slate-300 font-medium">
@@ -1317,6 +1398,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   Inspect generated articles, approve drafts, trigger media assets, and dispatch email campaigns.
                 </p>
               </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActiveTab('keywords')}
+                  className="bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors"
+                  id="newsletter-header-to-keywords-btn"
+                >
+                  <Target className="w-4 h-4 text-sky-400" />
+                  <span>Keyword Opportunities</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('seo')}
+                  className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors"
+                  id="newsletter-header-to-seo-btn"
+                >
+                  <Globe className="w-4 h-4 text-amber-400" />
+                  <span>SEO Configuration Studio</span>
+                </button>
+              </div>
             </div>
 
             {/* Newsletters Table */}
@@ -1327,6 +1426,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <tr>
                       <th className="p-4">ID</th>
                       <th className="p-4">Title & Scripture</th>
+                      <th className="p-4">Edition</th>
                       <th className="p-4">Theme</th>
                       <th className="p-4">Editorial Status</th>
                       <th className="p-4">Email Status</th>
@@ -1341,6 +1441,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <td className="p-4">
                           <div className="font-bold text-white text-sm">{nl.Title}</div>
                           <div className="text-amber-400 text-xs font-serif">{nl.ScriptureReference}</div>
+                        </td>
+                        <td className="p-4">
+                          <span
+                            className={`px-2 py-1 rounded text-[10px] font-bold ${
+                              nl.Edition === 'DAILY_DEVOTIONAL'
+                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                            }`}
+                          >
+                            {nl.Edition === 'DAILY_DEVOTIONAL' ? '☀️ Daily' : '📖 Weekly'}
+                          </span>
                         </td>
                         <td className="p-4">
                           <span className="bg-slate-900 px-2 py-1 rounded text-slate-300 font-medium">
@@ -1378,6 +1489,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             >
                               <Eye className="w-3.5 h-3.5" />
                               <span>Inspect Package</span>
+                            </button>
+
+                            <button
+                              onClick={() => setActiveTab('seo')}
+                              className="bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 px-2.5 py-1.5 rounded text-xs font-semibold flex items-center gap-1"
+                              title="Bulk edit meta titles, descriptions & canonicals"
+                            >
+                              <Globe className="w-3.5 h-3.5" />
+                              <span>SEO</span>
                             </button>
 
                             {nl.Status !== 'PUBLISHED' ? (
@@ -1440,6 +1560,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <div className="bg-slate-950/60 px-6 border-b border-slate-800 flex items-center gap-2 pt-2">
                     {[
                       { id: 'article', label: 'Article & Teaching' },
+                      { id: 'scripture', label: '📖 Scripture, Chapter & Verses' },
                       { id: 'social', label: 'Social Media Posts' },
                       { id: 'youtube', label: 'YouTube Short & Script' },
                       { id: 'prompts', label: 'AI Prompts (Veo/Image)' },
@@ -1461,6 +1582,128 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                   {/* Modal Body */}
                   <div className="p-6 overflow-y-auto flex-1 space-y-6 text-sm">
+                    {selectedReviewTab === 'scripture' && (() => {
+                      const parsed = parseScriptureReference(selectedNewsletterForReview.ScriptureReference);
+                      const displayBook = selectedNewsletterForReview.BibleBook || parsed.book || 'Scripture';
+                      const displayChapter = selectedNewsletterForReview.BibleChapter !== undefined ? String(selectedNewsletterForReview.BibleChapter) : parsed.chapter;
+                      const displayVerses = selectedNewsletterForReview.BibleVerses || parsed.verses;
+                      const versesList = getVersesBreakdown(
+                        selectedNewsletterForReview.ScriptureReference,
+                        selectedNewsletterForReview.ScriptureText,
+                        selectedNewsletterForReview.VersesBreakdown
+                      );
+                      const studyLinks = getBibleStudyLinks(
+                        displayBook,
+                        displayChapter,
+                        displayVerses,
+                        selectedNewsletterForReview.BibleTranslation || 'NIV'
+                      );
+
+                      return (
+                        <div className="space-y-6 bg-slate-950 p-5 rounded-xl border border-slate-800">
+                          {/* Scripture Anchor Card */}
+                          <div className="bg-amber-950/40 border border-amber-500/40 rounded-xl p-4 space-y-3">
+                            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-amber-400">
+                              <span className="flex items-center gap-1.5 uppercase tracking-wider">
+                                <BookOpen className="w-4 h-4 text-amber-500" />
+                                <span>Devotional Foundation Citation</span>
+                              </span>
+                              <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-md font-mono text-xs">
+                                {displayBook} {displayChapter}: {displayVerses} ({selectedNewsletterForReview.BibleTranslation || 'NIV'})
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                              <div className="bg-slate-900/90 p-2.5 rounded-lg border border-slate-800">
+                                <span className="text-slate-400 block text-[10px] uppercase font-semibold">Bible Book</span>
+                                <strong className="text-white text-sm">{displayBook}</strong>
+                              </div>
+                              <div className="bg-slate-900/90 p-2.5 rounded-lg border border-slate-800">
+                                <span className="text-slate-400 block text-[10px] uppercase font-semibold">Chapter</span>
+                                <strong className="text-amber-400 text-sm">Chapter {displayChapter}</strong>
+                              </div>
+                              <div className="bg-slate-900/90 p-2.5 rounded-lg border border-slate-800">
+                                <span className="text-slate-400 block text-[10px] uppercase font-semibold">Verse(s)</span>
+                                <strong className="text-amber-400 text-sm">Verse {displayVerses}</strong>
+                              </div>
+                            </div>
+
+                            <div className="pt-2 border-t border-amber-500/20">
+                              <span className="text-[10px] uppercase text-amber-300/80 font-bold block mb-1">Key Scripture Passage:</span>
+                              <p className="font-serif italic text-sm text-amber-100 leading-relaxed">
+                                “{selectedNewsletterForReview.ScriptureText}”
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Surrounding Chapter Context */}
+                          <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                              <Layers className="w-3.5 h-3.5" />
+                              <span>Surrounding Chapter {displayChapter} Theological Context</span>
+                            </h4>
+                            <p className="text-xs text-slate-300 leading-relaxed font-light">
+                              {selectedNewsletterForReview.FullChapterContext || getChapterContext(displayBook, displayChapter)}
+                            </p>
+                          </div>
+
+                          {/* Verse by Verse Breakdown */}
+                          <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                              <FileText className="w-3.5 h-3.5" />
+                              <span>Verse-by-Verse Text Breakdown ({displayBook} {displayChapter})</span>
+                            </h4>
+                            <div className="space-y-2">
+                              {versesList.map((v, idx) => (
+                                <div key={idx} className="bg-slate-950 p-3 rounded-lg border border-slate-800 flex items-start gap-3">
+                                  <span className="w-7 h-7 rounded-md bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs shrink-0 font-mono">
+                                    v{v.verseNumber}
+                                  </span>
+                                  <p className="text-xs text-slate-200 leading-relaxed flex-1">
+                                    {v.verseText}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* External Bible Study Links */}
+                          <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs">
+                            <span className="text-slate-400">External Study References:</span>
+                            <div className="flex items-center gap-2">
+                              <a
+                                href={studyLinks.bibleGatewayPassageUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700"
+                              >
+                                <span>BibleGateway ({displayBook} {displayChapter}:{displayVerses})</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                              <a
+                                href={studyLinks.youVersionUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700"
+                              >
+                                <span>YouVersion</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                              <a
+                                href={studyLinks.blueLetterBibleUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-slate-300 hover:text-white font-semibold flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700"
+                              >
+                                <span>Blue Letter Bible</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     {selectedReviewTab === 'article' && (
                       <div className="space-y-4 bg-slate-950 p-5 rounded-xl border border-slate-800">
                         <div>
@@ -1572,20 +1815,61 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     )}
 
                     {selectedReviewTab === 'youtube' && (
-                      <div className="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4 text-xs">
-                        <div>
-                          <span className="text-amber-400 font-bold uppercase block mb-1">Hook (0-3s):</span>
-                          <p className="text-white font-bold">{selectedNewsletterForReview.YouTubeShortHook}</p>
+                      <div className="space-y-4 text-xs">
+                        <div className="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4">
+                          <div>
+                            <span className="text-amber-400 font-bold uppercase block mb-1">Hook (0-3s):</span>
+                            <p className="text-white font-bold">{selectedNewsletterForReview.YouTubeShortHook}</p>
+                          </div>
+                          <div>
+                            <span className="text-amber-400 font-bold uppercase block mb-1">Spoken Script:</span>
+                            <p className="text-slate-300 leading-relaxed font-mono bg-slate-900 p-3 rounded">
+                              {selectedNewsletterForReview.YouTubeShortNarration}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-amber-400 font-bold uppercase block mb-1">CTA:</span>
+                            <p className="text-slate-300">{selectedNewsletterForReview.YouTubeShortCTA}</p>
+                          </div>
                         </div>
-                        <div>
-                          <span className="text-amber-400 font-bold uppercase block mb-1">Spoken Script:</span>
-                          <p className="text-slate-300 leading-relaxed font-mono bg-slate-900 p-3 rounded">
-                            {selectedNewsletterForReview.YouTubeShortNarration}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="text-amber-400 font-bold uppercase block mb-1">CTA:</span>
-                          <p className="text-slate-300">{selectedNewsletterForReview.YouTubeShortCTA}</p>
+
+                        {/* Creatomate Template Integration */}
+                        <div className="bg-gradient-to-br from-indigo-950/70 to-slate-950 p-5 rounded-xl border border-indigo-500/30 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold uppercase">
+                                Creatomate v2 Template
+                              </span>
+                              <code className="text-slate-400 font-mono text-[11px]">{CREATOMATE_CONFIG.templateId}</code>
+                            </div>
+                            <button
+                              onClick={() => {
+                                const curl = generateCreatomateCurlCommand(buildDevotionalCreatomatePayload(selectedNewsletterForReview));
+                                navigator.clipboard.writeText(curl);
+                              }}
+                              className="px-2.5 py-1 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 rounded text-xs flex items-center gap-1.5"
+                            >
+                              <Copy className="w-3 h-3" /> Copy cURL
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+                            <div className="bg-slate-900/80 p-2.5 rounded border border-slate-800">
+                              <span className="text-amber-400 font-semibold block text-[10px] mb-1">Slide 1 (Hook)</span>
+                              <p className="text-slate-300 line-clamp-2">“{selectedNewsletterForReview.YouTubeShortHook || selectedNewsletterForReview.ScriptureReference}”</p>
+                            </div>
+                            <div className="bg-slate-900/80 p-2.5 rounded border border-slate-800">
+                              <span className="text-amber-400 font-semibold block text-[10px] mb-1">Slide 2 (Scripture)</span>
+                              <p className="text-slate-300 line-clamp-2">“{selectedNewsletterForReview.ScriptureReference}”</p>
+                            </div>
+                            <div className="bg-slate-900/80 p-2.5 rounded border border-slate-800">
+                              <span className="text-amber-400 font-semibold block text-[10px] mb-1">Slide 3 (Message)</span>
+                              <p className="text-slate-300 line-clamp-2">{selectedNewsletterForReview.Title}</p>
+                            </div>
+                            <div className="bg-slate-900/80 p-2.5 rounded border border-slate-800">
+                              <span className="text-amber-400 font-semibold block text-[10px] mb-1">Slide 4 (Prayer)</span>
+                              <p className="text-slate-300 line-clamp-2">{selectedNewsletterForReview.Prayer}</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -1656,165 +1940,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         )}
 
         {/* =========================================================================
-            TAB 4: 10-SHEET GOOGLE SHEETS SIMULATOR & BROWSER
+            TAB: KEYWORD OPPORTUNITY & TOPICAL AUTHORITY RADAR
+            ========================================================================= */}
+        {(activeTab === 'KeywordOpportunity' || activeTab === 'keywords') && (
+          <AdminKeywordOpportunity
+            topics={topics}
+            newsletters={newsletters}
+            onAddTopic={onAddTopic}
+            onUpdateTopic={onUpdateTopic}
+            onUpdateNewsletter={onUpdateNewsletter}
+            onGenerateSpecificTopic={onGenerateSpecificTopic}
+            isProcessing={isProcessing}
+            onNavigateToTopicTab={() => setActiveTab('topics')}
+            onNavigateToNewsletterTab={() => setActiveTab('newsletters')}
+            onNavigateToSeoTab={() => setActiveTab('seo')}
+          />
+        )}
+
+        {/* =========================================================================
+            TAB: DEDICATED SEO CONFIGURATION PANEL
+            ========================================================================= */}
+        {activeTab === 'seo' && (
+          <AdminSeoConfigPanel
+            newsletters={newsletters}
+            onUpdateNewsletter={onUpdateNewsletter}
+            onNavigateToPublic={onNavigateToPublic}
+            onNavigateToKeywordsTab={() => setActiveTab('KeywordOpportunity')}
+          />
+        )}
+
+        {/* =========================================================================
+            TAB 4: GOOGLE SHEETS STUDIO & 10-SHEET ARCHITECTURE
             ========================================================================= */}
         {activeTab === 'sheets' && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-800/80 p-5 rounded-2xl border border-slate-700">
-              <div>
-                <h2 className="font-serif text-xl font-bold text-white flex items-center gap-2">
-                  <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
-                  <span>Google Sheets Architecture: 10 Connected Sheets</span>
-                </h2>
-                <p className="text-xs text-slate-400">
-                  Inspect the structured columns and data schema for all 10 synchronized workbook sheets.
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify({ topics, newsletters, subscribers, emailLogs, videos, systemLogs }, null, 2));
-                  const dl = document.createElement('a');
-                  dl.setAttribute('href', dataStr);
-                  dl.setAttribute('download', 'WordEmbassy_Sheets_Export.json');
-                  dl.click();
-                }}
-                className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5"
-              >
-                <Download className="w-4 h-4" />
-                <span>Export Full Sheets JSON</span>
-              </button>
-            </div>
-
-            {/* Sheets Tabs Header */}
-            <div className="flex items-center gap-1 overflow-x-auto bg-slate-950 p-2 rounded-xl border border-slate-800">
-              {[
-                'Topics',
-                'Newsletters',
-                'Subscribers',
-                'Publishing',
-                'Videos',
-                'Social',
-                'EmailLog',
-                'Analytics',
-                'Settings',
-                'Logs',
-              ].map((sheet) => (
-                <button
-                  key={sheet}
-                  onClick={() => setActiveSheetTab(sheet as any)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
-                    activeSheetTab === sheet
-                      ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-                  }`}
-                >
-                  Sheet: {sheet}
-                </button>
-              ))}
-            </div>
-
-            {/* Sheet Table Viewer */}
-            <div className="bg-slate-800/80 rounded-2xl border border-slate-700 p-4 overflow-x-auto font-mono text-xs">
-              {activeSheetTab === 'Topics' && (
-                <table className="w-full text-left">
-                  <thead className="bg-slate-950 text-slate-400 border-b border-slate-800">
-                    <tr>
-                      <th className="p-3">TopicID</th>
-                      <th className="p-3">Topic</th>
-                      <th className="p-3">Scripture</th>
-                      <th className="p-3">Theme</th>
-                      <th className="p-3">Priority</th>
-                      <th className="p-3">Status</th>
-                      <th className="p-3">PublishDate</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800">
-                    {topics.map((t) => (
-                      <tr key={t.TopicID}>
-                        <td className="p-3 text-amber-400">{t.TopicID}</td>
-                        <td className="p-3 text-white font-sans font-semibold">{t.Topic}</td>
-                        <td className="p-3 text-slate-300">{t.Scripture}</td>
-                        <td className="p-3 text-slate-400">{t.Theme}</td>
-                        <td className="p-3">{t.Priority}</td>
-                        <td className="p-3">{t.Status}</td>
-                        <td className="p-3 text-slate-400">{t.PublishDate}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-
-              {activeSheetTab === 'Subscribers' && (
-                <table className="w-full text-left">
-                  <thead className="bg-slate-950 text-slate-400 border-b border-slate-800">
-                    <tr>
-                      <th className="p-3">SubscriberID</th>
-                      <th className="p-3">Name</th>
-                      <th className="p-3">Email</th>
-                      <th className="p-3">Group</th>
-                      <th className="p-3">DateSubscribed</th>
-                      <th className="p-3">Status</th>
-                      <th className="p-3">UnsubscribeToken</th>
-                      <th className="p-3">SendCount</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800">
-                    {subscribers.map((s) => (
-                      <tr key={s.SubscriberID}>
-                        <td className="p-3 text-amber-400">{s.SubscriberID}</td>
-                        <td className="p-3 text-white font-sans">{s.Name}</td>
-                        <td className="p-3 text-slate-300">{s.Email}</td>
-                        <td className="p-3">
-                          <span className="bg-slate-900 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded text-[11px]">
-                            {s.Group || 'Weekly Devotional Readers'}
-                          </span>
-                        </td>
-                        <td className="p-3 text-slate-400">{s.DateSubscribed}</td>
-                        <td className="p-3 text-emerald-400 font-bold">{s.Status}</td>
-                        <td className="p-3 text-slate-500">{s.UnsubscribeToken}</td>
-                        <td className="p-3">{s.SendCount}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-
-              {activeSheetTab === 'EmailLog' && (
-                <table className="w-full text-left">
-                  <thead className="bg-slate-950 text-slate-400 border-b border-slate-800">
-                    <tr>
-                      <th className="p-3">EmailLogID</th>
-                      <th className="p-3">NewsletterID</th>
-                      <th className="p-3">Email</th>
-                      <th className="p-3">SentAt</th>
-                      <th className="p-3">Status</th>
-                      <th className="p-3">Attempt</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800">
-                    {emailLogs.map((log) => (
-                      <tr key={log.EmailLogID}>
-                        <td className="p-3 text-amber-400">{log.EmailLogID}</td>
-                        <td className="p-3 text-slate-300">{log.NewsletterID}</td>
-                        <td className="p-3 text-white">{log.Email}</td>
-                        <td className="p-3 text-slate-400">{log.SentAt}</td>
-                        <td className="p-3 text-emerald-400 font-bold">{log.Status}</td>
-                        <td className="p-3">{log.AttemptNumber}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-
-              {activeSheetTab !== 'Topics' &&
-                activeSheetTab !== 'Subscribers' &&
-                activeSheetTab !== 'EmailLog' && (
-                  <div className="p-8 text-center text-slate-400">
-                    <p>Displaying live schema & records for <strong>{activeSheetTab}</strong>.</p>
-                  </div>
-                )}
-            </div>
-          </div>
+          <GoogleSheetsStudio
+            topics={topics}
+            newsletters={newsletters}
+            subscribers={subscribers}
+            emailLogs={emailLogs}
+            systemLogs={systemLogs}
+          />
         )}
 
         {/* =========================================================================
@@ -1834,7 +1999,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       Google Drive Cloud Storage Hub
                     </h2>
                     <p className="text-xs text-slate-400">
-                      Standard Hierarchy: <code>Word Embassy / Newsletters / &#123;YEAR&#125; / &#123;MONTH - TITLE&#125;</code>
+                      Standard Hierarchy: <code>Living Word Embassy / Newsletters / &#123;YEAR&#125; / &#123;MONTH - TITLE&#125;</code>
                     </p>
                   </div>
                 </div>
@@ -1991,7 +2156,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs font-mono space-y-2">
                           <div className="text-amber-300 font-bold flex items-center gap-1.5 border-b border-slate-800 pb-2">
                             <Folder className="w-3.5 h-3.5" />
-                            <span className="truncate">Word Embassy / Newsletters / 2026 / August - {nl.Title}</span>
+                            <span className="truncate">Living Word Embassy / Newsletters / 2026 / August - {nl.Title}</span>
                           </div>
                           <ul className="space-y-1.5 text-slate-300 text-[11px]">
                             <li className="flex items-center justify-between">
@@ -2109,7 +2274,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <Folder className="w-10 h-10 mx-auto text-slate-600" />
                       <p className="text-sm font-semibold text-white">No files found in this folder</p>
                       <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                        Click "Sync All Packages to Drive" above to populate Word Embassy newsletter packages.
+                        Click "Sync All Packages to Drive" above to populate Living Word Embassy newsletter packages.
                       </p>
                     </div>
                   ) : (
@@ -2193,7 +2358,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         type="text"
                         value={newFolderNameInput}
                         onChange={(e) => setNewFolderNameInput(e.target.value)}
-                        placeholder="e.g. Word Embassy Archives"
+                        placeholder="e.g. Living Word Embassy Archives"
                         className="w-full bg-slate-950 text-white px-3 py-2 rounded-lg border border-slate-700 text-xs focus:outline-hidden focus:border-amber-500"
                         autoFocus
                       />
@@ -2364,7 +2529,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div className="p-3 bg-slate-900/90 rounded-xl border border-amber-500/30 space-y-1.5 text-[11px]">
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400">Sender Identity:</span>
-                    <span className="text-amber-300 font-bold">Word Embassy Editorial</span>
+                    <span className="text-amber-300 font-bold">Living Word Embassy Editorial</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400">Sender & Lead:</span>
@@ -2519,9 +2684,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
                             adminTestReceipt.recipient
                           )}&su=${encodeURIComponent(
-                            `🕊️ [Word Embassy] ${activeNewsletter?.Title || 'Devotional'}`
+                            `🕊️ [Living Word Embassy] ${activeNewsletter?.Title || 'Devotional'}`
                           )}&body=${encodeURIComponent(
-                            `WORD EMBASSY DEVOTIONAL\n\nTitle: ${activeNewsletter?.Title}\nScripture: ${activeNewsletter?.ScriptureReference}\n\n${activeNewsletter?.Teaching}\n\nBlessings,\nWord Embassy (embassyword@gmail.com)`
+                            `LIVING WORD EMBASSY DEVOTIONAL\n\nTitle: ${activeNewsletter?.Title}\nScripture: ${activeNewsletter?.ScriptureReference}\n\n${activeNewsletter?.Teaching}\n\nBlessings,\nLiving Word Embassy (embassyword@gmail.com)`
                           )}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -2572,7 +2737,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     {/* Email Header */}
                     <div className="border-b border-slate-200 pb-4 text-center">
                       <div className="font-serif text-2xl font-black text-[#1E293B] tracking-tight">
-                        WORD EMBASSY
+                        LIVING WORD EMBASSY
                       </div>
                       <div className="text-xs text-[#B45309] font-medium tracking-wide uppercase mt-0.5">
                         Bible Teaching • Faith • Prayer
@@ -2611,7 +2776,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                     {/* Email Footer */}
                     <div className="border-t border-slate-200 pt-4 text-center text-[10px] text-slate-500 space-y-1">
-                      <p>© 2026 Word Embassy Ministries • www.wordembassy.org</p>
+                      <p>© 2026 Living Word Embassy Ministries • www.wordembassy.org</p>
                       <p>You received this because you are an active subscriber.</p>
                       <p className="underline cursor-pointer">Unsubscribe safely</p>
                     </div>
@@ -2741,71 +2906,126 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </p>
               </div>
             </div>
+
+            {/* Creatomate v2 Template Video Automation Output */}
+            {activeNewsletter && (
+              <div className="bg-gradient-to-br from-indigo-950/40 via-slate-900 to-slate-950 border border-indigo-500/30 rounded-2xl p-6 space-y-4 shadow-xl">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
+                      <Video className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-bold text-white">Creatomate v2 Video Output</h4>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                          Template c67fa002
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400">
+                        Automated multi-slide vertical video ready for TikTok, Instagram Reels, and YouTube Shorts
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        const payload = buildDevotionalCreatomatePayload(activeNewsletter);
+                        navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+                      }}
+                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    >
+                      <Copy className="w-3.5 h-3.5" /> Copy JSON
+                    </button>
+                    <button
+                      onClick={() => {
+                        const payload = buildDevotionalCreatomatePayload(activeNewsletter);
+                        const curl = generateCreatomateCurlCommand(payload);
+                        navigator.clipboard.writeText(curl);
+                      }}
+                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-lg shadow-indigo-600/20"
+                    >
+                      <Terminal className="w-3.5 h-3.5" /> Copy cURL Command
+                    </button>
+                  </div>
+                </div>
+
+                {/* Slides Preview */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                  <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800 space-y-1">
+                    <div className="flex items-center justify-between text-[10px] text-amber-400 font-semibold">
+                      <span>Slide 1 • Hook</span>
+                      <span className="text-slate-500 font-mono">0-3s</span>
+                    </div>
+                    <p className="text-slate-200 font-medium line-clamp-3">
+                      “{activeNewsletter.YouTubeShortHook || `What does God say about ${activeNewsletter.ScriptureReference}?`}”
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800 space-y-1">
+                    <div className="flex items-center justify-between text-[10px] text-amber-400 font-semibold">
+                      <span>Slide 2 • Scripture Focus</span>
+                      <span className="text-slate-500 font-mono">3-8s</span>
+                    </div>
+                    <p className="text-slate-200 font-medium line-clamp-3">
+                      {activeNewsletter.ScriptureReference}
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800 space-y-1">
+                    <div className="flex items-center justify-between text-[10px] text-amber-400 font-semibold">
+                      <span>Slide 3 • Word Reflection</span>
+                      <span className="text-slate-500 font-mono">8-12s</span>
+                    </div>
+                    <p className="text-slate-200 font-medium line-clamp-3">
+                      {activeNewsletter.Title}
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800 space-y-1">
+                    <div className="flex items-center justify-between text-[10px] text-amber-400 font-semibold">
+                      <span>Slide 4 • Prayer & CTA</span>
+                      <span className="text-slate-500 font-mono">12-15s</span>
+                    </div>
+                    <p className="text-slate-200 font-medium line-clamp-3">
+                      {activeNewsletter.Prayer || activeNewsletter.YouTubeShortCTA}
+                    </p>
+                  </div>
+                </div>
+
+                {/* cURL Command Code Block */}
+                <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-1.5 font-mono text-[11px] overflow-x-auto">
+                  <div className="flex items-center justify-between text-slate-500 text-[10px]">
+                    <span className="flex items-center gap-1"><Terminal className="w-3 h-3 text-indigo-400" /> Terminal Ready Command</span>
+                    <span>POST https://api.creatomate.com/v2/renders</span>
+                  </div>
+                  <pre className="text-slate-300 leading-relaxed overflow-x-auto whitespace-pre">
+                    {generateCreatomateCurlCommand(buildDevotionalCreatomatePayload(activeNewsletter))}
+                  </pre>
+                </div>
+              </div>
+            )}
+
+            {/* Interactive Video Reel & Sample Preview */}
+            {activeNewsletter && (
+              <div className="pt-2">
+                <VeoVideoPlayer newsletter={activeNewsletter} />
+              </div>
+            )}
           </div>
         )}
 
         {/* =========================================================================
-            TAB 8: GOOGLE APPS SCRIPT EXPORTER
+            TAB 8: GOOGLE APPS SCRIPT STUDIO (IDE, RUNNER, TRIGGERS & EXPORTER)
             ========================================================================= */}
         {activeTab === 'gas' && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-800/80 p-5 rounded-2xl border border-slate-700">
-              <div>
-                <h2 className="font-serif text-xl font-bold text-white flex items-center gap-2">
-                  <Code className="w-5 h-5 text-amber-400" />
-                  <span>Production Google Apps Script Exporter</span>
-                </h2>
-                <p className="text-xs text-slate-400">
-                  Deploy the full Word Embassy automation engine directly into your Google Workspace account.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Code.gs box */}
-              <div className="bg-slate-800/80 rounded-2xl p-6 border border-slate-700 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-serif text-base font-bold text-white">Code.gs</h4>
-                    <span className="text-[11px] text-slate-400">Backend Automation & Sheet Triggers</span>
-                  </div>
-                  <button
-                    onClick={() => handleCopyGas('gs')}
-                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5 shadow-xs"
-                    id="copy-gas-code-btn"
-                  >
-                    {copiedCode === 'gs' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedCode === 'gs' ? 'Copied Code.gs!' : 'Copy Code.gs'}</span>
-                  </button>
-                </div>
-
-                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-[11px] text-slate-300 max-h-[380px] overflow-y-auto">
-                  <pre>{gasCode.codeGs}</pre>
-                </div>
-              </div>
-
-              {/* Index.html box */}
-              <div className="bg-slate-800/80 rounded-2xl p-6 border border-slate-700 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-serif text-base font-bold text-white">Index.html</h4>
-                    <span className="text-[11px] text-slate-400">HTML Service Web Portal Template</span>
-                  </div>
-                  <button
-                    onClick={() => handleCopyGas('html')}
-                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5 shadow-xs"
-                    id="copy-gas-html-btn"
-                  >
-                    {copiedCode === 'html' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedCode === 'html' ? 'Copied Index.html!' : 'Copy Index.html'}</span>
-                  </button>
-                </div>
-
-                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-[11px] text-slate-300 max-h-[380px] overflow-y-auto">
-                  <pre>{gasCode.indexHtml}</pre>
-                </div>
-              </div>
-            </div>
+            <GoogleAppsScriptStudio
+              onAddLog={(action, status, details) => {
+                // Add system log entry if available
+              }}
+            />
           </div>
         )}
 
@@ -2991,21 +3211,159 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 />
               </div>
 
-              <div>
-                <label className="block text-slate-300 font-bold mb-1">
-                  Key Scripture Reference <span className="text-rose-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. 1 Peter 5:7, Philippians 4:6-7"
-                  value={newTopicData.Scripture}
-                  onChange={(e) => setNewTopicData({ ...newTopicData, Scripture: e.target.value })}
-                  className="w-full bg-slate-950 text-white px-3.5 py-2.5 rounded-xl border border-slate-800 focus:outline-none focus:border-amber-400"
-                />
+              {/* Quick Scripture Presets */}
+              <div className="space-y-1.5 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                <span className="text-[11px] font-bold text-amber-400 block">
+                  Quick Scripture Chapter & Verses Presets:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { topic: 'The Lord Is My Shepherd & Guide', scripture: 'Psalm 23: 1', book: 'Psalm', chapter: '23', verses: '1', theme: 'Comfort & Peace' },
+                    { topic: 'Overcoming Anxiety Through God’s Word', scripture: 'Philippians 4:6-7', book: 'Philippians', chapter: '4', verses: '6-7', theme: 'Faith & Prayer' },
+                    { topic: 'Standing Strong in God’s Eternal Promise', scripture: 'Romans 8:28', book: 'Romans', chapter: '8', verses: '28', theme: 'Sovereignty & Hope' },
+                    { topic: 'Renewing Your Strength in Weary Times', scripture: 'Isaiah 40:31', book: 'Isaiah', chapter: '40', verses: '31', theme: 'Strength & Endurance' },
+                    { topic: 'Casting All Your Care Upon Him', scripture: '1 Peter 5:7', book: '1 Peter', chapter: '5', verses: '7', theme: 'Trust & Surrender' },
+                    { topic: 'Trusting God with All Your Heart', scripture: 'Proverbs 3:5-6', book: 'Proverbs', chapter: '3', verses: '5-6', theme: 'Wisdom & Guidance' },
+                  ].map((preset, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() =>
+                        setNewTopicData({
+                          ...newTopicData,
+                          Topic: preset.topic,
+                          Scripture: preset.scripture,
+                          BibleBook: preset.book,
+                          BibleChapter: preset.chapter,
+                          BibleVerses: preset.verses,
+                          Theme: preset.theme,
+                        })
+                      }
+                      className="text-[10px] bg-slate-800 hover:bg-amber-500/20 hover:text-amber-300 text-slate-300 px-2 py-1 rounded border border-slate-700 transition-colors"
+                    >
+                      {preset.scripture}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              {/* Explicit Bible Book, Chapter, Verses Inputs */}
+              <div className="bg-slate-900/80 p-3.5 rounded-xl border border-amber-500/30 space-y-3">
+                <div className="flex items-center justify-between text-xs font-bold text-amber-400">
+                  <span className="flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Scripture Chapter & Verses Breakdown</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    {newTopicData.BibleBook} {newTopicData.BibleChapter}: {newTopicData.BibleVerses}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <div>
+                    <label className="block text-slate-300 font-semibold mb-1 text-[11px]">
+                      Bible Book <span className="text-rose-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Psalm, John, Luke"
+                      value={newTopicData.BibleBook}
+                      onChange={(e) => {
+                        const newBook = e.target.value;
+                        setNewTopicData({
+                          ...newTopicData,
+                          BibleBook: newBook,
+                          Scripture: `${newBook} ${newTopicData.BibleChapter}: ${newTopicData.BibleVerses}`.trim(),
+                        });
+                      }}
+                      className="w-full bg-slate-950 text-white px-3 py-2 rounded-lg border border-slate-800 focus:outline-none focus:border-amber-400 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-300 font-semibold mb-1 text-[11px]">
+                      Chapter <span className="text-rose-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. 23, 4, 18"
+                      value={newTopicData.BibleChapter}
+                      onChange={(e) => {
+                        const newChapter = e.target.value;
+                        setNewTopicData({
+                          ...newTopicData,
+                          BibleChapter: newChapter,
+                          Scripture: `${newTopicData.BibleBook} ${newChapter}: ${newTopicData.BibleVerses}`.trim(),
+                        });
+                      }}
+                      className="w-full bg-slate-950 text-white px-3 py-2 rounded-lg border border-slate-800 focus:outline-none focus:border-amber-400 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-300 font-semibold mb-1 text-[11px]">
+                      Verse(s) <span className="text-rose-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. 1, 6-7, 13-14"
+                      value={newTopicData.BibleVerses}
+                      onChange={(e) => {
+                        const newVerses = e.target.value;
+                        setNewTopicData({
+                          ...newTopicData,
+                          BibleVerses: newVerses,
+                          Scripture: `${newTopicData.BibleBook} ${newTopicData.BibleChapter}: ${newVerses}`.trim(),
+                        });
+                      }}
+                      className="w-full bg-slate-950 text-white px-3 py-2 rounded-lg border border-slate-800 focus:outline-none focus:border-amber-400 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 font-medium mb-1 text-[10px]">
+                    Combined Scripture Citation (Synced)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Psalm 23: 1"
+                    value={newTopicData.Scripture}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const parsed = parseScriptureReference(val);
+                      setNewTopicData({
+                        ...newTopicData,
+                        Scripture: val,
+                        BibleBook: parsed.book || newTopicData.BibleBook,
+                        BibleChapter: parsed.chapter || newTopicData.BibleChapter,
+                        BibleVerses: parsed.verses || newTopicData.BibleVerses,
+                      });
+                    }}
+                    className="w-full bg-slate-950 text-amber-300 font-mono px-3 py-1.5 rounded-lg border border-slate-800 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1">Edition</label>
+                  <select
+                    value={newTopicData.Edition}
+                    onChange={(e) =>
+                      setNewTopicData({ ...newTopicData, Edition: e.target.value as any })
+                    }
+                    className="w-full bg-slate-950 text-white px-3 py-2.5 rounded-xl border border-slate-800 text-xs"
+                  >
+                    <option value="DAILY_DEVOTIONAL">☀️ Daily (Tue–Sun)</option>
+                    <option value="WEEKLY_EXEGESIS">📖 Weekly (Mon)</option>
+                  </select>
+                </div>
+
                 <div>
                   <label className="block text-slate-300 font-bold mb-1">Theme</label>
                   <input
@@ -3013,7 +3371,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     placeholder="e.g. Faith & Trust"
                     value={newTopicData.Theme}
                     onChange={(e) => setNewTopicData({ ...newTopicData, Theme: e.target.value })}
-                    className="w-full bg-slate-950 text-white px-3.5 py-2.5 rounded-xl border border-slate-800"
+                    className="w-full bg-slate-950 text-white px-3.5 py-2.5 rounded-xl border border-slate-800 text-xs"
                   />
                 </div>
 
@@ -3024,7 +3382,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     onChange={(e) =>
                       setNewTopicData({ ...newTopicData, Priority: e.target.value as any })
                     }
-                    className="w-full bg-slate-950 text-white px-3.5 py-2.5 rounded-xl border border-slate-800"
+                    className="w-full bg-slate-950 text-white px-3 py-2.5 rounded-xl border border-slate-800 text-xs"
                   >
                     <option value="HIGH">HIGH</option>
                     <option value="MEDIUM">MEDIUM</option>

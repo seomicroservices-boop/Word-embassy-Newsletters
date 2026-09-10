@@ -30,38 +30,89 @@ import {
   INITIAL_SYSTEM_LOGS,
   INITIAL_SETTINGS,
 } from './data/initialData';
+import { parseScriptureReference, formatBibleCitation } from './services/bibleScripture';
+import {
+  NaturalSceneryBackground,
+  ScenerySettings,
+  NATURAL_SCENERIES,
+} from './components/NaturalSceneryBackground';
 
 export default function App() {
   // Navigation State
   const [currentView, setCurrentView] = useState<string>('home');
-  const [currentSlug, setCurrentSlug] = useState<string>('the-power-of-persistent-prayer');
+  const [currentSlug, setCurrentSlug] = useState<string>('the-lord-is-my-shepherd-psalm-23');
   const [unsubscribeToken, setUnsubscribeToken] = useState<string>('');
 
   // App Data States (with LocalStorage persistence for durable multi-session support)
   const [topics, setTopics] = useState<Topic[]>(() => {
     const saved = localStorage.getItem('we_topics');
-    return saved ? JSON.parse(saved) : INITIAL_TOPICS;
+    if (saved) {
+      try {
+        const parsed: Topic[] = JSON.parse(saved);
+        const merged = [...parsed];
+        for (const initialTopic of INITIAL_TOPICS) {
+          if (!merged.some((t) => t.TopicID === initialTopic.TopicID)) {
+            merged.unshift(initialTopic);
+          }
+        }
+        return merged;
+      } catch (e) {
+        console.error('Error parsing topics:', e);
+      }
+    }
+    return INITIAL_TOPICS;
   });
 
   const [newsletters, setNewsletters] = useState<Newsletter[]>(() => {
     const saved = localStorage.getItem('we_newsletters');
+    let baseList = INITIAL_NEWSLETTERS;
     if (saved) {
       try {
         const parsed: Newsletter[] = JSON.parse(saved);
-        return parsed.map((nl) => {
-          if (nl.FeaturedImageURL?.includes('1506126613408-eca07ce68773')) {
-            return {
-              ...nl,
-              FeaturedImageURL: 'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&w=1200&q=80',
+        const merged = [...parsed];
+        for (const initialNl of INITIAL_NEWSLETTERS) {
+          const idx = merged.findIndex(
+            (n) => n.NewsletterID === initialNl.NewsletterID || n.Slug === initialNl.Slug
+          );
+          if (idx === -1) {
+            merged.unshift(initialNl);
+          } else {
+            merged[idx] = {
+              ...initialNl,
+              ...merged[idx],
+              BibleBook: merged[idx].BibleBook || initialNl.BibleBook,
+              BibleChapter: merged[idx].BibleChapter || initialNl.BibleChapter,
+              BibleVerses: merged[idx].BibleVerses || initialNl.BibleVerses,
+              FullChapterContext: merged[idx].FullChapterContext || initialNl.FullChapterContext,
+              VersesBreakdown: merged[idx].VersesBreakdown || initialNl.VersesBreakdown,
             };
           }
-          return nl;
-        });
+        }
+        baseList = merged;
       } catch (e) {
         console.error('Error parsing newsletters:', e);
       }
     }
-    return INITIAL_NEWSLETTERS;
+    return baseList.map((nl) => {
+      let updated = { ...nl };
+      if (!updated.BibleBook || !updated.BibleChapter || !updated.BibleVerses) {
+        const parsedRef = parseScriptureReference(updated.ScriptureReference);
+        updated.BibleBook = updated.BibleBook || parsedRef.book;
+        updated.BibleChapter = updated.BibleChapter || parsedRef.chapter;
+        updated.BibleVerses = updated.BibleVerses || parsedRef.verses;
+      }
+      if (updated.FeaturedImageURL?.includes('1506126613408-eca07ce68773')) {
+        updated.FeaturedImageURL =
+          'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&w=1200&q=80';
+      }
+      if (!updated.AudioURL) {
+        updated.AudioURL =
+          'https://cdn.jsdelivr.net/gh/rafaelreis-hotmart/Audio-Sample-files@master/sample.mp3';
+        updated.AudioNarrationDuration = updated.AudioNarrationDuration || '2:15';
+        updated.AudioVoice = updated.AudioVoice || 'ElevenLabs Voice (nPczCjzI2devNBz1zQrb)';
+      }
+      return updated;
+    });
   });
 
   const [subscriberGroups, setSubscriberGroups] = useState<SubscriberGroup[]>(() => {
@@ -69,7 +120,7 @@ export default function App() {
     if (saved) {
       try {
         const parsed: SubscriberGroup[] = JSON.parse(saved);
-        // Ensure default groups like Test Subscribers & Word Embassy exist
+        // Ensure default groups like Test Subscribers & Living Word Embassy exist
         const merged = [...parsed];
         for (const initialGroup of INITIAL_SUBSCRIBER_GROUPS) {
           if (!merged.some((g) => g.Name.toLowerCase() === initialGroup.Name.toLowerCase())) {
@@ -157,7 +208,7 @@ export default function App() {
         : {
             email: 'embassyword@gmail.com',
             role: 'Super Administrator & Lead Editor',
-            name: 'Word Embassy Lead Editor',
+            name: 'Living Word Embassy Lead Editor',
           };
     }
   );
@@ -212,6 +263,58 @@ export default function App() {
     localStorage.setItem('we_settings', JSON.stringify(settings));
   }, [settings]);
 
+  // Natural Scenery Settings State (with local storage persistence)
+  const [scenerySettings, setScenerySettings] = useState<ScenerySettings>(() => {
+    const saved = localStorage.getItem('we_scenery_settings');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing scenery settings:', e);
+      }
+    }
+    return {
+      sceneryId: 'green-pastures',
+      intensity: 'balanced',
+      blur: 'soft',
+      panEffect: true,
+    };
+  });
+
+  useEffect(() => {
+    localStorage.setItem('we_scenery_settings', JSON.stringify(scenerySettings));
+  }, [scenerySettings]);
+
+  const handleUpdateScenerySettings = (updated: Partial<ScenerySettings>) => {
+    setScenerySettings((prev) => ({ ...prev, ...updated }));
+  };
+
+  const handleCycleScenery = () => {
+    const currentIndex = NATURAL_SCENERIES.findIndex((s) => s.id === scenerySettings.sceneryId);
+    const nextIndex = (currentIndex + 1) % NATURAL_SCENERIES.length;
+    setScenerySettings((prev) => ({
+      ...prev,
+      sceneryId: NATURAL_SCENERIES[nextIndex].id,
+      intensity: prev.intensity === 'off' ? 'subtle' : prev.intensity,
+    }));
+  };
+
+  // Google Analytics (GA4) Page View Tracking
+  useEffect(() => {
+    if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+      const pagePath =
+        currentView === 'newsletter'
+          ? `/newsletter/${currentSlug}`
+          : currentView === 'home'
+          ? '/'
+          : `/${currentView}`;
+      (window as any).gtag('event', 'page_view', {
+        page_path: pagePath,
+        page_title: document.title,
+      });
+    }
+  }, [currentView, currentSlug]);
+
   // Navigation handler
   const handleNavigate = (view: string, slugOrToken?: string) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -245,30 +348,43 @@ export default function App() {
   };
 
   // 2. Subscription handlers
-  const handleSubscribe = (name: string, email: string): Subscriber => {
+  const handleSubscribe = (
+    name: string,
+    email: string,
+    editionPreference: 'ALL' | 'DAILY_DEVOTIONAL' | 'WEEKLY_EXEGESIS' = 'ALL'
+  ): Subscriber => {
     const existing = subscribers.find((s) => s.Email.toLowerCase() === email.toLowerCase());
     if (existing) {
-      if (existing.Status === 'UNSUBSCRIBED') {
+      if (existing.Status === 'UNSUBSCRIBED' || existing.EditionPreference !== editionPreference) {
         const updated = subscribers.map((s) =>
           s.Email.toLowerCase() === email.toLowerCase()
-            ? { ...s, Status: 'ACTIVE' as const }
+            ? { ...s, Status: 'ACTIVE' as const, EditionPreference: editionPreference }
             : s
         );
         setSubscribers(updated);
-        addSystemLog('handleSubscribe', 'SUCCESS', `Reactivated subscription for ${email}`);
+        addSystemLog('handleSubscribe', 'SUCCESS', `Updated subscription preference for ${email} (${editionPreference})`);
       }
-      return existing;
+      return { ...existing, EditionPreference: editionPreference };
     }
 
     const token = `tok_${Math.random().toString(36).substring(2, 12)}`;
+    const groupName =
+      editionPreference === 'DAILY_DEVOTIONAL'
+        ? 'Daily Devotional Readers'
+        : editionPreference === 'WEEKLY_EXEGESIS'
+        ? 'Weekly Exegesis Scholars'
+        : 'All Editions Subscribers';
+
     const newSub: Subscriber = {
       SubscriberID: `SUB-${(subscribers.length + 1).toString().padStart(3, '0')}`,
       Name: name || 'Faithful Reader',
       Email: email,
       DateSubscribed: new Date().toISOString().split('T')[0],
       Status: 'ACTIVE',
-      Source: 'Word Embassy Website',
+      Source: 'Living Word Embassy Website',
       UnsubscribeToken: token,
+      Group: groupName,
+      EditionPreference: editionPreference,
       SendCount: 0,
     };
 
@@ -276,7 +392,7 @@ export default function App() {
     addSystemLog(
       'handleSubscribe',
       'SUCCESS',
-      `New subscriber enrolled: ${email} (${name})`
+      `New subscriber enrolled: ${email} (${name}) [${editionPreference}]`
     );
     return newSub;
   };
@@ -348,13 +464,20 @@ export default function App() {
     );
   };
 
-  const handleAddSubscriber = (subData: { Name: string; Email: string; Group?: string }) => {
+  const handleAddSubscriber = (subData: {
+    Name: string;
+    Email: string;
+    Group?: string;
+    EditionPreference?: 'ALL' | 'DAILY_DEVOTIONAL' | 'WEEKLY_EXEGESIS';
+  }) => {
     const token = `tok_${Math.random().toString(36).substring(2, 12)}`;
+    const pref = subData.EditionPreference || 'ALL';
     const newSub: Subscriber = {
       SubscriberID: `SUB-${(subscribers.length + 1).toString().padStart(3, '0')}`,
       Name: subData.Name || 'New Subscriber',
       Email: subData.Email,
-      Group: subData.Group || 'Weekly Devotional Readers',
+      Group: subData.Group || (pref === 'DAILY_DEVOTIONAL' ? 'Daily Devotional Readers' : pref === 'WEEKLY_EXEGESIS' ? 'Weekly Exegesis Scholars' : 'All Editions Subscribers'),
+      EditionPreference: pref,
       DateSubscribed: new Date().toISOString().split('T')[0],
       Status: 'ACTIVE',
       Source: 'Admin Dashboard Registration',
@@ -365,7 +488,7 @@ export default function App() {
     addSystemLog(
       'SubscriberManagement',
       'SUCCESS',
-      `Admin registered subscriber ${subData.Email} (${newSub.Group})`
+      `Admin registered subscriber ${subData.Email} (${newSub.Group}) [${pref}]`
     );
   };
 
@@ -380,13 +503,14 @@ export default function App() {
       Notes: topicData.Notes || '',
       Priority: topicData.Priority || 'HIGH',
       Status: 'PENDING',
+      Edition: topicData.Edition || 'DAILY_DEVOTIONAL',
       PublishDate: topicData.PublishDate || new Date().toISOString().split('T')[0],
       CreatedAt: new Date().toISOString(),
       UpdatedAt: new Date().toISOString(),
     };
 
     setTopics((prev) => [newTopic, ...prev]);
-    addSystemLog('handleAddTopic', 'SUCCESS', `Added topic ${newId}: ${newTopic.Topic}`);
+    addSystemLog('handleAddTopic', 'SUCCESS', `Added topic ${newId}: ${newTopic.Topic} [${newTopic.Edition}]`);
   };
 
   const handleUpdateTopic = (id: string, updates: Partial<Topic>) => {
@@ -429,17 +553,66 @@ export default function App() {
       const slug = (generatedData.Slug || topic.Topic.toLowerCase().replace(/[^a-z0-9]+/g, '-'))
         .replace(/(^-|-$)/g, '');
 
+      // Synthesize ElevenLabs Audio Narration for the devotional
+      addSystemLog('ElevenLabsAudio', 'INFO', `Synthesizing neural voiceover narration with ElevenLabs (voice: nPczCjzI2devNBz1zQrb)...`, jobId);
+      let audioUrl = generatedData.AudioURL || 'https://cdn.jsdelivr.net/gh/rafaelreis-hotmart/Audio-Sample-files@master/sample.mp3';
+      let audioDuration = '2:15';
+      let audioVoice = 'ElevenLabs Studio (nPczCjzI2devNBz1zQrb)';
+      let audioTranscript = '';
+
+      try {
+        const spokenScript = `${generatedData.Title || topic.Topic}. Scripture reading: ${generatedData.ScriptureReference || topic.Scripture}. “${generatedData.ScriptureText || ''}”. In our devotional meditation today: ${generatedData.Opening || generatedData.Excerpt || ''} Let us pray together: ${generatedData.Prayer || 'Heavenly Father, strengthen our walk in Your love and truth. Amen.'}`;
+
+        const audioRes = await fetch('/api/audio/generate-narration', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: spokenScript,
+            title: generatedData.Title || topic.Topic,
+            scripture: generatedData.ScriptureReference || topic.Scripture,
+            verseText: generatedData.ScriptureText,
+            prayer: generatedData.Prayer,
+            voiceId: 'nPczCjzI2devNBz1zQrb',
+            newsletterId: newNlId,
+          }),
+        });
+
+        if (audioRes.ok) {
+          const audioData = await audioRes.json();
+          if (audioData.audioUrl) {
+            audioUrl = audioData.audioUrl;
+            audioDuration = audioData.duration || '2:15';
+            audioVoice = `${audioData.provider || 'ElevenLabs'} (nPczCjzI2devNBz1zQrb)`;
+            audioTranscript = audioData.transcript || spokenScript;
+            addSystemLog('ElevenLabsAudio', 'SUCCESS', `Synthesized devotional narration (${audioData.duration || '2:15'}) via ${audioData.provider}`, jobId);
+          }
+        }
+      } catch (audioErr: any) {
+        console.warn('ElevenLabs audio narration synthesis warning:', audioErr);
+        addSystemLog('ElevenLabsAudio', 'WARNING', `Devotional narration attached: ${audioErr.message}`, jobId);
+      }
+
+      const finalScriptureRef = generatedData.ScriptureReference || topic.Scripture;
+      const parsedRef = parseScriptureReference(finalScriptureRef);
+
       const newNewsletter: Newsletter = {
         NewsletterID: newNlId,
         TopicID: topic.TopicID,
+        Edition: topic.Edition || 'DAILY_DEVOTIONAL',
         PublishDate: topic.PublishDate,
         Theme: topic.Theme,
         Title: generatedData.Title || topic.Topic,
         Slug: slug,
-        ScriptureReference: generatedData.ScriptureReference || topic.Scripture,
+        ScriptureReference: finalScriptureRef,
         ScriptureText:
           generatedData.ScriptureText ||
           'For with God nothing shall be impossible. — Luke 1:37',
+        BibleBook: generatedData.BibleBook || parsedRef.book,
+        BibleChapter: generatedData.BibleChapter || parsedRef.chapter,
+        BibleVerses: generatedData.BibleVerses || parsedRef.verses,
+        BibleTranslation: generatedData.BibleTranslation || 'NIV',
+        FullChapterContext: generatedData.FullChapterContext,
+        VersesBreakdown: generatedData.VersesBreakdown,
         Excerpt:
           generatedData.Excerpt ||
           'Discover profound biblical insights on trusting God through life’s steepest valleys.',
@@ -462,16 +635,20 @@ export default function App() {
         GoogleDocURL: 'https://docs.google.com/document/d/wordembassy',
         VideoURL: 'https://youtube.com/shorts/wordembassy',
         YouTubeURL: 'https://youtube.com/shorts/wordembassy',
-        MetaTitle: `${generatedData.Title || topic.Topic} | Word Embassy`,
-        MetaDescription: generatedData.Excerpt || 'Word Embassy Christian Newsletter',
+        AudioURL: audioUrl,
+        AudioNarrationDuration: audioDuration,
+        AudioVoice: audioVoice,
+        AudioTranscript: audioTranscript,
+        MetaTitle: `${generatedData.Title || topic.Topic} | Living Word Embassy`,
+        MetaDescription: generatedData.Excerpt || 'Living Word Embassy Christian Newsletter',
         FeaturedImagePrompt: generatedData.FeaturedImagePrompt || '',
         InfographicPrompt: 'Structured modern Christian theological infographic layout with 3 key pillars.',
         VeoVideoPrompt: generatedData.VeoVideoPrompt || '',
-        YouTubeTitle: generatedData.YouTubeTitle || `${generatedData.Title} | Word Embassy`,
+        YouTubeTitle: generatedData.YouTubeTitle || `${generatedData.Title} | Living Word Embassy`,
         YouTubeShortHook: generatedData.YouTubeShortHook || 'What is God teaching you right now?',
         YouTubeShortNarration: generatedData.YouTubeShortNarration || '',
         YouTubeShortCTA:
-          generatedData.YouTubeShortCTA || 'Subscribe to Word Embassy for weekly Bible studies.',
+          generatedData.YouTubeShortCTA || 'Subscribe to Living Word Embassy for weekly Bible studies.',
         FacebookPost: generatedData.FacebookPost || '',
         InstagramCaption: generatedData.InstagramCaption || '',
         InstagramHashtags: generatedData.InstagramHashtags || [
@@ -657,7 +834,7 @@ export default function App() {
         body: JSON.stringify({
           newsletterId,
           recipientEmail: targetAddress,
-          subject: `🕊️ [Word Embassy] ${targetNl?.Title || 'Devotional'} — ${targetNl?.ScriptureReference || ''}`,
+          subject: `🕊️ [Living Word Embassy] ${targetNl?.Title || 'Devotional'} — ${targetNl?.ScriptureReference || ''}`,
         }),
       });
     } catch (e) {
@@ -723,9 +900,29 @@ export default function App() {
       ScriptureReference: 'Psalm 89:15-17',
       ScriptureText:
         'Blessed are those who have learned to acclaim you, who walk in the light of your presence, Lord. They rejoice in your name all day long; they celebrate your righteousness.',
+      BibleBook: 'Psalm',
+      BibleChapter: '89',
+      BibleVerses: '15-17',
+      BibleTranslation: 'NIV',
+      FullChapterContext:
+        'Psalm 89 is a majestic covenant psalm recalling God’s faithfulness to David and His everlasting lovingkindness. Verses 15-17 celebrate the supernatural joy of walking in the light of God’s countenance and being exalted in His righteousness.',
+      VersesBreakdown: [
+        {
+          verseNumber: 15,
+          verseText: 'Blessed are those who have learned to acclaim you, who walk in the light of your presence, Lord.',
+        },
+        {
+          verseNumber: 16,
+          verseText: 'They rejoice in your name all day long; they celebrate your righteousness.',
+        },
+        {
+          verseNumber: 17,
+          verseText: 'For you are their glory and strength, and by your favor you exalt our horn.',
+        },
+      ],
       Theme: 'Divine Favor & Joyful Living',
       Opening:
-        'Dear Word Embassy Subscriber, this is a special live pastoral test dispatch from Word Embassy Editorial (embassyword@gmail.com). May this devotional message ignite peace, strength, and joy in your spirit today.',
+        'Dear Living Word Embassy Subscriber, this is a special live pastoral test dispatch from Living Word Embassy Editorial (embassyword@gmail.com). May this devotional message ignite peace, strength, and joy in your spirit today.',
       Teaching:
         'To walk in the light of God’s presence is to live with a constant, grateful consciousness of His nearness. God’s favor is not earned through anxious human striving; it is freely bestowed in Christ Jesus. When we learn to acclaim Him through daily prayer and thanksgiving, our hearts remain anchored above the storms of life.',
       KeyPoint1Title: 'The Illuminating Light of His Presence',
@@ -741,7 +938,7 @@ export default function App() {
         '1. Take 5 minutes today to praise God for 3 specific blessings.\n2. Meditate on Psalm 89:15 whenever anxious thoughts arise.\n3. Send an uplifting scripture to a friend or ministry member.',
       Prayer:
         'Heavenly Father, we thank You for the radiant light of Your presence. Fill our hearts with Your supernatural peace and our homes with Your joy. Lead us in paths of righteousness for Your name’s sake. In Jesus’ holy name, Amen.',
-      Closing: 'Dispatched with blessings from Word Embassy Editorial (embassyword@gmail.com).',
+      Closing: 'Dispatched with blessings from Living Word Embassy Editorial (embassyword@gmail.com).',
       Excerpt:
         'A special test devotional message on Psalm 89:15 and living in the joyful, radiant presence of the Lord.',
       FeaturedImageURL:
@@ -751,7 +948,7 @@ export default function App() {
       GoogleDocURL: 'https://docs.google.com/document/d/1WordEmbassy_FavorTest_DocID/edit',
       VideoURL: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
       YouTubeURL: 'https://youtube.com/shorts/favor-test-embassy',
-      MetaTitle: 'Walking in the Radiance of Divine Favor — Word Embassy',
+      MetaTitle: 'Walking in the Radiance of Divine Favor — Living Word Embassy',
       MetaDescription: 'Pastoral test dispatch from embassyword@gmail.com.',
       PublishDate: today,
       Status: 'PUBLISHED',
@@ -825,18 +1022,32 @@ export default function App() {
     newsletters.find((n) => n.Status === 'PUBLISHED') ||
     newsletters[0];
 
+  const activeScenery =
+    NATURAL_SCENERIES.find((s) => s.id === scenerySettings.sceneryId) || NATURAL_SCENERIES[0];
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#FDFBF7] text-[#1E293B] font-sans antialiased selection:bg-[#FEF3C7] selection:text-[#B45309]">
+    <div className="min-h-screen flex flex-col bg-[#FDFBF7]/85 text-[#1E293B] font-sans antialiased selection:bg-[#FEF3C7] selection:text-[#B45309] relative">
+      {/* Ambient Biblical Natural Scenery Layer & Floating Controls */}
+      <NaturalSceneryBackground
+        currentSceneryId={scenerySettings.sceneryId}
+        intensity={scenerySettings.intensity}
+        blur={scenerySettings.blur}
+        panEffect={scenerySettings.panEffect}
+        onUpdateSettings={handleUpdateScenerySettings}
+      />
+
       {/* Top Navbar */}
       <Navbar
         currentView={currentView}
         onNavigate={handleNavigate}
         isAdmin={currentView === 'admin'}
         onToggleAdmin={() => handleNavigate(currentView === 'admin' ? 'home' : 'admin')}
+        currentSceneryTitle={scenerySettings.intensity === 'off' ? 'Scenery: Off' : activeScenery.title}
+        onCycleScenery={handleCycleScenery}
       />
 
       {/* Main Views */}
-      <div className="flex-1">
+      <div className="flex-1 relative z-10">
         {currentView === 'home' && (
           <PublicHome
             newsletters={newsletters}
@@ -852,6 +1063,7 @@ export default function App() {
             allNewsletters={newsletters.filter((n) => n.Status === 'PUBLISHED')}
             onNavigate={handleNavigate}
             onSubscribe={handleSubscribe}
+            onUpdateNewsletter={handleUpdateNewsletter}
           />
         )}
 
@@ -909,7 +1121,7 @@ export default function App() {
                 setAdminUser({
                   email: 'embassyword@gmail.com',
                   role: 'Super Administrator & Lead Editor',
-                  name: 'Word Embassy Lead Editor',
+                  name: 'Living Word Embassy Lead Editor',
                 });
                 setIsAdminAuthenticated(true);
                 return true;
@@ -956,10 +1168,13 @@ export default function App() {
 
       {/* Public Footer (hidden in admin mode for clean app control) */}
       {currentView !== 'admin' && (
-        <Footer
-          latestNewsletters={newsletters.filter((n) => n.Status === 'PUBLISHED').slice(0, 4)}
-          onNavigate={handleNavigate}
-        />
+        <div className="relative z-20">
+          <Footer
+            latestNewsletters={newsletters.filter((n) => n.Status === 'PUBLISHED').slice(0, 4)}
+            onNavigate={handleNavigate}
+            onOpenAdmin={() => handleNavigate('admin')}
+          />
+        </div>
       )}
     </div>
   );

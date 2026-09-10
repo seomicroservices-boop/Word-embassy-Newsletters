@@ -44,7 +44,7 @@ export const InfographicCanvas: React.FC<InfographicCanvasProps> = ({ newsletter
     ctx.fillStyle = '#FEF3C7';
     ctx.font = 'bold 16px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('WORD EMBASSY DIGITAL INFOGRAPHIC', 400, 78);
+    ctx.fillText('LIVING WORD EMBASSY DIGITAL INFOGRAPHIC', 400, 78);
 
     ctx.fillStyle = '#94A3B8';
     ctx.font = '12px "Plus Jakarta Sans", sans-serif';

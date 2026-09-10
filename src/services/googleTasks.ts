@@ -18,9 +18,9 @@ export interface GoogleTaskList {
 }
 
 /**
- * Fetch or create default "Word Embassy Editorial Workflow" task list
+ * Fetch or create default "Living Word Embassy Editorial Workflow" task list
  */
-export async function getOrCreateTaskList(title: string = 'Word Embassy Editorial Workflow'): Promise<GoogleTaskList> {
+export async function getOrCreateTaskList(title: string = 'Living Word Embassy Editorial Workflow'): Promise<GoogleTaskList> {
   const token = await getAccessToken();
 
   if (!token || token === 'google-workspace-auth-active') {
@@ -96,7 +96,7 @@ export async function listGoogleTasks(taskListId: string): Promise<GoogleTaskIte
       {
         id: 'task-4',
         title: 'Export Formatted Google Doc to Pastoral Archives',
-        notes: 'Word Embassy / Newsletters / 2026 Archive.',
+        notes: 'Living Word Embassy / Newsletters / 2026 Archive.',
         status: 'needsAction',
         due: new Date(Date.now() + 86400000 * 4).toISOString(),
         category: 'Scripture',

@@ -20,7 +20,7 @@ export interface FormResponseItem {
 }
 
 /**
- * Create a new Google Form for Word Embassy
+ * Create a new Google Form for Living Word Embassy
  */
 export async function createGoogleForm(
   title: string,
@@ -28,7 +28,7 @@ export async function createGoogleForm(
 ): Promise<FormItem> {
   const token = await getAccessToken();
 
-  let description = 'Word Embassy Ministry Feedback & Interaction';
+  let description = 'Living Word Embassy Ministry Feedback & Interaction';
   let defaultQuestions: any[] = [];
 
   if (formType === 'PRAYER_REQUEST') {
@@ -43,7 +43,7 @@ export async function createGoogleForm(
   } else if (formType === 'READER_FEEDBACK') {
     description = 'Help us sharpen our weekly biblical expositions and multimedia video devotionals.';
     defaultQuestions = [
-      { title: 'How often do you read Word Embassy newsletters?', type: 'CHOICE', options: ['Every Week', '2-3 times a month', 'Occasionally', 'First time reader'] },
+      { title: 'How often do you read Living Word Embassy newsletters?', type: 'CHOICE', options: ['Every Week', '2-3 times a month', 'Occasionally', 'First time reader'] },
       { title: 'Which content element do you find most impactful?', type: 'CHOICE', options: ['In-depth Scripture Teaching', 'Daily Practical Applications', 'Pastoral Prayer', 'Infographics', 'Veo Short Videos'] },
       { title: 'How would you rate the spiritual depth and biblical fidelity?', type: 'SCALE' },
       { title: 'What topics or Bible books would you love us to explore next?', type: 'PARAGRAPH' },
@@ -56,7 +56,7 @@ export async function createGoogleForm(
       { title: 'Why is this topic timely or important to you?', type: 'PARAGRAPH' },
     ];
   } else {
-    description = 'Share how God has worked in your life through the Word Embassy teachings and prayers.';
+    description = 'Share how God has worked in your life through the Living Word Embassy teachings and prayers.';
     defaultQuestions = [
       { title: 'Your Name', type: 'TEXT' },
       { title: 'Your Country / City', type: 'TEXT' },

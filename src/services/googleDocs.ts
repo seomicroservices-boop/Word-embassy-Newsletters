@@ -15,7 +15,7 @@ export async function createNewsletterGoogleDoc(
   newsletter: Newsletter
 ): Promise<GoogleDocResult> {
   const token = await getAccessToken();
-  const docTitle = `Word Embassy — ${newsletter.Title} (${newsletter.PublishDate})`;
+  const docTitle = `Living Word Embassy — ${newsletter.Title} (${newsletter.PublishDate})`;
 
   if (!token || token === 'google-workspace-auth-active') {
     const mockId = `doc_${newsletter.NewsletterID.toLowerCase()}_${Date.now().toString(36)}`;
@@ -46,7 +46,7 @@ export async function createNewsletterGoogleDoc(
     const documentId = createdDoc.documentId;
 
     // 2. Format Body Text
-    const fullText = `WORD EMBASSY DIGITAL MINISTRIES
+    const fullText = `LIVING WORD EMBASSY DIGITAL MINISTRIES
 ${newsletter.Title.toUpperCase()}
 Scripture: ${newsletter.ScriptureReference} | Theme: ${newsletter.Theme} | Date: ${newsletter.PublishDate}
 
@@ -81,7 +81,7 @@ ${newsletter.Prayer}
 CLOSING:
 ${newsletter.Closing}
 
-Word Embassy — www.wordembassy.org | Published for Spiritual Growth`;
+Living Word Embassy — www.wordembassy.org | Published for Spiritual Growth`;
 
     // 3. Insert Text via batchUpdate
     await fetch(`https://docs.googleapis.com/v1/documents/${documentId}:batchUpdate`, {

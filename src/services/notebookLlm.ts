@@ -45,7 +45,7 @@ export interface NotebookChatMessage {
 }
 
 /**
- * Default Curated Theological Sources for Word Embassy NotebookLM
+ * Default Curated Theological Sources for Living Word Embassy NotebookLM
  */
 export const DEFAULT_NOTEBOOK_SOURCES: NotebookSource[] = [
   {
@@ -77,7 +77,7 @@ export const DEFAULT_NOTEBOOK_SOURCES: NotebookSource[] = [
   },
   {
     id: 'src-4',
-    title: 'Word Embassy Pastoral Editorial Archive — Vol 24',
+    title: 'Living Word Embassy Pastoral Editorial Archive — Vol 24',
     type: 'Newsletter',
     wordCount: 780,
     addedAt: '2026-08-27',
@@ -102,7 +102,7 @@ export async function generateTheologicalStudyGuide(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        prompt: `You are NotebookLM's master theological researcher and exegete for Word Embassy Ministries.
+        prompt: `You are NotebookLM's master theological researcher and exegete for Living Word Embassy Ministries.
 Analyze the following grounding sources for the topic "${topicTitle}":
 
 ${combinedSources}
@@ -211,7 +211,7 @@ export async function generateAudioOverviewEpisode(
       {
         speaker: 'Dr. David Vance',
         timestamp: '0:00',
-        text: `Welcome back to the Word Embassy Deep Dive notebook audio overview! Today Sarah and I are digging into a truly staggering passage: Ephesians 3 and this whole concept of being strengthened with power in the inner man.`,
+        text: `Welcome back to the Living Word Embassy Deep Dive notebook audio overview! Today Sarah and I are digging into a truly staggering passage: Ephesians 3 and this whole concept of being strengthened with power in the inner man.`,
       },
       {
         speaker: 'Pastor Sarah Chen',
@@ -246,7 +246,7 @@ export async function generateAudioOverviewEpisode(
       {
         speaker: 'Pastor Sarah Chen',
         timestamp: '3:10',
-        text: `Amen to that! We hope this NotebookLM audio synthesis enriches your preparation for this Sunday's Word Embassy digital release.`,
+        text: `Amen to that! We hope this NotebookLM audio synthesis enriches your preparation for this Sunday's Living Word Embassy digital release.`,
       },
     ],
   };

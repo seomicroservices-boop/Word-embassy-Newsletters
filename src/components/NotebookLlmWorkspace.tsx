@@ -59,7 +59,7 @@ export const NotebookLlmWorkspace: React.FC = () => {
     {
       id: 'msg-1',
       role: 'assistant',
-      content: `Welcome to the Word Embassy NotebookLM research workspace. I have analyzed your ${sources.length} theological sources (Scriptures, Greek Lexicons, Patristic Commentaries, and Pastoral Archives). Ask any doctrinal, hermeneutical, or expository question!`,
+      content: `Welcome to the Living Word Embassy NotebookLM research workspace. I have analyzed your ${sources.length} theological sources (Scriptures, Greek Lexicons, Patristic Commentaries, and Pastoral Archives). Ask any doctrinal, hermeneutical, or expository question!`,
       timestamp: 'Just now',
     },
   ]);

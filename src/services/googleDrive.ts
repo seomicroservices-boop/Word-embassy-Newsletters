@@ -299,10 +299,10 @@ export async function saveNewsletterPackageToDrive(
   ];
   const monthName = monthNames[date.getMonth()];
   const monthTitle = `${monthName} - ${newsletter.Title}`;
-  const folderPath = `Word Embassy / Newsletters / ${year} / ${monthTitle}`;
+  const folderPath = `Living Word Embassy / Newsletters / ${year} / ${monthTitle}`;
 
   // 1. Google Doc Content
-  const docContent = `WORD EMBASSY NEWSLETTER
+  const docContent = `LIVING WORD EMBASSY NEWSLETTER
 Title: ${newsletter.Title}
 Scripture: ${newsletter.ScriptureReference}
 Theme: ${newsletter.Theme}
@@ -338,7 +338,7 @@ ${newsletter.Prayer}
 CLOSING:
 ${newsletter.Closing}
 
-Word Embassy Digital Publication | www.wordembassy.org`;
+Living Word Embassy Digital Publication | www.wordembassy.org`;
 
   // 2. YouTube Script Content
   const scriptContent = `YOUTUBE SHORT SCRIPT & METADATA
@@ -355,7 +355,7 @@ Description: ${newsletter.Excerpt || ''}
 Tags: ${(newsletter.InstagramHashtags || []).join(', ')}`;
 
   // 3. Social Media Distribution
-  const socialContent = `WORD EMBASSY SOCIAL MEDIA CONTENT
+  const socialContent = `LIVING WORD EMBASSY SOCIAL MEDIA CONTENT
 
 [FACEBOOK POST]
 ${newsletter.FacebookPost || ''}
@@ -454,7 +454,7 @@ ${newsletter.TikTokCaption || ''}`;
 
   if (token && token !== 'google-workspace-auth-active') {
     try {
-      const rootEmbassyId = await createOrGetDriveFolder('Word Embassy', undefined, token);
+      const rootEmbassyId = await createOrGetDriveFolder('Living Word Embassy', undefined, token);
       const newsFolderId = await createOrGetDriveFolder('Newsletters', rootEmbassyId, token);
       const yearFolderId = await createOrGetDriveFolder(year, newsFolderId, token);
       driveFolderId = await createOrGetDriveFolder(monthTitle, yearFolderId, token);
