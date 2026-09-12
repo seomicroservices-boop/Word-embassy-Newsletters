@@ -105,18 +105,55 @@ export const PublicHome: React.FC<PublicHomeProps> = ({
           {/* Hero Subscription Box */}
           <div className="mt-10 max-w-xl mx-auto">
             {isSubscribed ? (
-              <div className="bg-emerald-50/95 backdrop-blur-xs border border-emerald-200 text-emerald-800 p-5 rounded-2xl shadow-sm text-center flex items-center justify-center gap-3">
-                <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
-                <div className="text-left text-sm font-semibold">
-                  <span>
-                    Praise God! You have successfully subscribed to Living Word Embassy (
-                    {editionPref === 'ALL'
-                      ? 'Both Daily & Weekly Editions'
-                      : editionPref === 'DAILY_DEVOTIONAL'
-                      ? 'Daily Devotional (Tue–Sun)'
-                      : 'Weekly Exegesis (Mondays)'}
-                    ).
-                  </span>
+              <div className="bg-emerald-50/95 backdrop-blur-xs border border-emerald-200 text-emerald-900 p-6 rounded-3xl shadow-lg text-center space-y-4">
+                <div className="flex items-center justify-center gap-3">
+                  <CheckCircle2 className="w-7 h-7 text-emerald-600 shrink-0" />
+                  <div className="text-left">
+                    <h3 className="font-serif text-lg font-bold text-emerald-950">
+                      Praise God! You have successfully subscribed to Living Word Embassy
+                    </h3>
+                    <p className="text-xs text-emerald-800 mt-0.5">
+                      You are enrolled in{' '}
+                      <strong>
+                        {editionPref === 'ALL'
+                          ? 'Both Daily & Weekly Editions'
+                          : editionPref === 'DAILY_DEVOTIONAL'
+                          ? 'Daily Devotional (Tue–Sun)'
+                          : 'Weekly Exegesis (Mondays)'}
+                      </strong>
+                      . Welcome to our spiritual community!
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-emerald-200/80">
+                  <p className="text-xs font-semibold text-emerald-900 mb-3">
+                    Continue your daily fellowship on our official media channels:
+                  </p>
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <a
+                      href="https://www.youtube.com/channel/UCymieOPsE0wPoPjS-vC57LA"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-xs transition-colors"
+                      id="post-sub-youtube-btn"
+                    >
+                      <Youtube className="w-4 h-4" />
+                      <span>Subscribe on YouTube</span>
+                      <ExternalLink className="w-3 h-3 opacity-80" />
+                    </a>
+                    <a
+                      href="https://www.tiktok.com/@embassyword"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-black text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-xs transition-colors"
+                      id="post-sub-tiktok-btn"
+                    >
+                      <Video className="w-4 h-4 text-pink-400" />
+                      <span>Follow on TikTok (@embassyword)</span>
+                      <ExternalLink className="w-3 h-3 opacity-80" />
+                    </a>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -202,6 +239,58 @@ export const PublicHome: React.FC<PublicHomeProps> = ({
               <span className="flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Choose Your Frequency
               </span>
+            </div>
+
+            {/* Official Video Channels Callout */}
+            <div className="mt-8 pt-6 border-t border-slate-200/80 max-w-xl mx-auto">
+              <div className="text-center mb-3">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  Official Video Channels & Faith Teachings
+                </span>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <a
+                  href="https://www.youtube.com/channel/UCymieOPsE0wPoPjS-vC57LA"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-1/2 inline-flex items-center justify-center gap-3 bg-white/95 hover:bg-red-50 text-slate-800 hover:text-red-700 font-semibold text-xs px-4 py-3 rounded-2xl border border-slate-200 hover:border-red-300 shadow-xs transition-all group"
+                  id="hero-channel-youtube-btn"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-red-100 text-red-600 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                    <Youtube className="w-4 h-4" />
+                  </div>
+                  <div className="text-left min-w-0 flex-1">
+                    <div className="font-bold text-slate-900 group-hover:text-red-700 leading-tight">
+                      YouTube Channel
+                    </div>
+                    <div className="text-[10px] text-slate-500 truncate">
+                      Video Teachings & Devotionals
+                    </div>
+                  </div>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-red-500 shrink-0" />
+                </a>
+
+                <a
+                  href="https://www.tiktok.com/@embassyword"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-1/2 inline-flex items-center justify-center gap-3 bg-white/95 hover:bg-slate-50 text-slate-800 hover:text-slate-950 font-semibold text-xs px-4 py-3 rounded-2xl border border-slate-200 hover:border-slate-400 shadow-xs transition-all group"
+                  id="hero-channel-tiktok-btn"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-slate-900 text-pink-400 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                    <Video className="w-4 h-4" />
+                  </div>
+                  <div className="text-left min-w-0 flex-1">
+                    <div className="font-bold text-slate-900 group-hover:text-slate-950 leading-tight">
+                      TikTok Channel
+                    </div>
+                    <div className="text-[10px] text-slate-500 truncate">
+                      @embassyword • Daily Shorts
+                    </div>
+                  </div>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-900 shrink-0" />
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -830,7 +919,7 @@ export const PublicHome: React.FC<PublicHomeProps> = ({
 
               {/* Channel 3: TikTok Shorts */}
               <a
-                href="https://www.tiktok.com/@paulinefaith67?_r=1&_t=ZT-99IFvhsT9w6"
+                href="https://www.tiktok.com/@embassyword"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-pink-500/50 p-4 rounded-2xl transition-all group flex flex-col justify-between shadow-xs"
@@ -844,7 +933,7 @@ export const PublicHome: React.FC<PublicHomeProps> = ({
                     TikTok
                   </span>
                   <h3 className="font-serif text-sm font-bold text-white group-hover:text-amber-300 transition-colors mt-1 mb-1">
-                    @paulinefaith67
+                    @embassyword
                   </h3>
                   <p className="text-[11px] text-slate-300 leading-relaxed">
                     Quick daily scripture moments & reels.

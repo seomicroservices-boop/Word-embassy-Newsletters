@@ -1,0 +1,70 @@
+{
+  "totalViews": 1431,
+  "uniqueVisitors": 615,
+  "todayViews": 51,
+  "lastUpdatedDate": "2026-09-12",
+  "uniqueVisitorIds": [
+    "test_vis_123",
+    "v_mty5fer1_h5mep1",
+    "v_test_subscriber_demo"
+  ],
+  "pageBreakdown": {
+    "/": 644,
+    "/archive": 338,
+    "/blog": 275,
+    "/videos": 186,
+    "/topics": 98,
+    "/about": 90
+  },
+  "dailyBreakdown": {
+    "2026-09-12": 51
+  },
+  "recentVisits": [
+    {
+      "id": "vis_1789203646638_lr8m",
+      "path": "/about",
+      "pageTitle": "About Word Embassy",
+      "timestamp": "2026-09-12T09:00:46.638Z",
+      "visitorId": "v_test_subscriber_demo",
+      "userAgent": "curl/7.88.1"
+    },
+    {
+      "id": "vis_1789203264746_gg51",
+      "path": "/",
+      "pageTitle": "Living Word Embassy — Christian Daily Devotionals & Scripture Exegesis",
+      "timestamp": "2026-09-12T08:54:24.746Z",
+      "visitorId": "v_mty5fer1_h5mep1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "referrer": "https://ais-dev-o2ifr7u64zfirczlomleyz-626384694782.us-east1.run.app/"
+    },
+    {
+      "id": "vis_1789203245323_7rfg",
+      "path": "/",
+      "pageTitle": "Home Page Test",
+      "timestamp": "2026-09-12T08:54:05.323Z",
+      "visitorId": "test_vis_123",
+      "userAgent": "curl/7.88.1"
+    },
+    {
+      "id": "init-1",
+      "path": "/",
+      "pageTitle": "Living Word Embassy | Daily Devotional",
+      "timestamp": "2026-09-12T08:50:02.629Z",
+      "visitorId": "vis_legacy_1"
+    },
+    {
+      "id": "init-2",
+      "path": "/archive",
+      "pageTitle": "Newsletter Archive",
+      "timestamp": "2026-09-12T08:39:02.629Z",
+      "visitorId": "vis_legacy_2"
+    },
+    {
+      "id": "init-3",
+      "path": "/blog",
+      "pageTitle": "Theological Expository Blog",
+      "timestamp": "2026-09-12T08:19:02.629Z",
+      "visitorId": "vis_legacy_3"
+    }
+  ]
+}

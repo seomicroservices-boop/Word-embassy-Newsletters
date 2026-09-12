@@ -526,12 +526,12 @@ https://www.wordembassy.org | embassyword@gmail.com`;
                   id="template-group-select"
                 >
                   <option value="ALL">All Active Subscribers ({subscribers.filter((s) => s.Status === 'ACTIVE').length})</option>
-                  {subscriberGroups.map((g) => {
+                  {subscriberGroups.map((g, idx) => {
                     const count = subscribers.filter(
                       (s) => s.Group === g.Name && s.Status === 'ACTIVE'
                     ).length;
                     return (
-                      <option key={g.GroupID} value={g.Name}>
+                      <option key={`${g.GroupID || 'grp'}-${idx}`} value={g.Name}>
                         {g.Name} ({count} active)
                       </option>
                     );

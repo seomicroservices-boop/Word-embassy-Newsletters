@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'node:fs';
 import { GoogleGenAI, Type } from '@google/genai';
 import { generateRssFeed, injectSeoMeta } from './server/seoRenderer';
+import { getVisitorStats, recordVisit } from './server/visitorTracker';
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -66,6 +67,34 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Visitor Analytics & Page Counter Endpoints
+app.get('/api/analytics/stats', (req, res) => {
+  try {
+    const stats = getVisitorStats();
+    res.json({ success: true, stats });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to retrieve stats' });
+  }
+});
+
+app.post('/api/analytics/visit', (req, res) => {
+  try {
+    const { path: pagePath, pageTitle, visitorId } = req.body || {};
+    const userAgent = req.headers['user-agent'];
+    const referrer = req.headers['referer'] || req.body?.referrer;
+    const stats = recordVisit({
+      path: pagePath || '/',
+      pageTitle,
+      visitorId,
+      userAgent,
+      referrer,
+    });
+    res.json({ success: true, stats });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error?.message || 'Failed to record visit' });
+  }
+});
+
 // Direct Download endpoint for deployment/Cloud Shell
 app.get('/api/download-source', (req, res) => {
   const archivePath = path.join(process.cwd(), 'public', 'word-embassy-app.tar.gz');
@@ -77,6 +106,70 @@ app.get('/api/download-source', (req, res) => {
       }
     }
   });
+});
+
+// Admin Authentication & Verification Endpoint
+app.post('/api/admin/login', (req, res) => {
+  try {
+    const { email, password, pin } = req.body || {};
+
+    const validAdmins: Record<string, { role: string; name: string }> = {
+      'embassyword@gmail.com': {
+        role: 'Super Administrator & Lead Editor',
+        name: 'Living Word Embassy Lead Editor',
+      },
+      'seomicroservices@gmail.com': {
+        role: 'Platform Systems Architect & SEO Lead',
+        name: 'SEO Microservices Engineering',
+      },
+      'omicroservices@gmail.com': {
+        role: 'Google Stack Engine Administrator',
+        name: 'OMicroservices Admin & Intercessor',
+      },
+    };
+
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    const trimmedPassword = (password || '').trim();
+    const trimmedPin = (pin || '').trim();
+
+    // Accepted password options:
+    // 1. Environment variable ADMIN_PASSWORD if set
+    // 2. Default master password: Embassy2026! or wordembassy2026
+    // 3. Master PIN: 7777
+    const envPassword = process.env.ADMIN_PASSWORD;
+    const isPasswordValid =
+      (envPassword && trimmedPassword === envPassword) ||
+      trimmedPassword === 'Embassy2026!' ||
+      trimmedPassword === 'wordembassy2026' ||
+      trimmedPassword === '7777' ||
+      trimmedPin === '7777';
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid administrator password or PIN. Access denied.',
+      });
+    }
+
+    const adminInfo = validAdmins[normalizedEmail] || {
+      role: 'Authorized Administrator',
+      name: normalizedEmail ? normalizedEmail.split('@')[0] : 'Living Word Embassy Admin',
+    };
+
+    const token = `adm_${Buffer.from(`${normalizedEmail || 'admin'}:${Date.now()}`).toString('base64')}`;
+
+    return res.json({
+      success: true,
+      token,
+      user: {
+        email: normalizedEmail || 'embassyword@gmail.com',
+        role: adminInfo.role,
+        name: adminInfo.name,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error?.message || 'Authentication error' });
+  }
 });
 
 // Helper to extract parameters from request body

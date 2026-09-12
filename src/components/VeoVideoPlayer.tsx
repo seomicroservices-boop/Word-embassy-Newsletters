@@ -49,7 +49,7 @@ export interface VideoBackgroundTheme {
 export const VIDEO_BG_THEMES: VideoBackgroundTheme[] = [
   {
     id: 'ivory',
-    name: 'Warm Ivory (Attached)',
+    name: 'Warm Ivory (Resident Pastor)',
     hex: '#FAF8F5',
     secondaryHex: '#FFFDF9',
     textClass: 'text-slate-900',
@@ -157,7 +157,7 @@ export const VeoVideoPlayer: React.FC<VeoVideoPlayerProps> = ({ newsletter }) =>
   const [progress, setProgress] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Background Customization State (defaults to the attached Warm Ivory Parchment #FAF8F5)
+  // Background Customization State (defaults to Resident Pastor Warm Ivory Parchment #FAF8F5)
   const [selectedThemeId, setSelectedThemeId] = useState<string>(() => {
     return localStorage.getItem('we_video_template_theme_v2') || 'ivory';
   });
@@ -329,7 +329,28 @@ export const VeoVideoPlayer: React.FC<VeoVideoPlayerProps> = ({ newsletter }) =>
   const activeTheme = VIDEO_BG_THEMES.find((t) => t.id === selectedThemeId) || VIDEO_BG_THEMES[0];
   const effectiveBgHex = isCustomColor ? customColor : activeTheme.hex;
   const effectiveCardBg = isCustomColor ? (customColor === '#000000' ? '#121212' : customColor) : activeTheme.cardBg;
-  const isLight = !activeTheme.isDark || effectiveBgHex.toLowerCase() === '#faf8f5' || effectiveBgHex.toLowerCase() === '#fdfbf7' || effectiveBgHex.toLowerCase() === '#ffffff';
+
+  // Calculate relative luminance for custom colors or themes to ensure 100% accurate contrast
+  const getHexLuminance = (hex: string): number => {
+    try {
+      const cleanHex = hex.replace('#', '');
+      const fullHex = cleanHex.length === 3 ? cleanHex.split('').map((c) => c + c).join('') : cleanHex;
+      const num = parseInt(fullHex, 16);
+      const r = ((num >> 16) & 255) / 255;
+      const g = ((num >> 8) & 255) / 255;
+      const b = (num & 255) / 255;
+      return 0.299 * r + 0.587 * g + 0.114 * b;
+    } catch {
+      return 0;
+    }
+  };
+
+  const isLight = isCustomColor
+    ? getHexLuminance(customColor) > 0.55
+    : (!activeTheme.isDark || effectiveBgHex.toLowerCase() === '#faf8f5' || effectiveBgHex.toLowerCase() === '#fdfbf7' || effectiveBgHex.toLowerCase() === '#ffffff');
+
+  // Video reel visual darkness check (an artwork background photo or dark canvas is always visually dark)
+  const isReelVisualDark = bgStyle === 'tinted_image' || !isLight;
 
   const handleSelectTheme = (themeId: string) => {
     setSelectedThemeId(themeId);
@@ -531,10 +552,14 @@ export const VeoVideoPlayer: React.FC<VeoVideoPlayerProps> = ({ newsletter }) =>
       {/* VIEW 1: Interactive Devotional Reel (9:16) */}
       {activeEngine === 'reel' && (
         <div
-          className="flex flex-col lg:flex-row items-center justify-center gap-8 rounded-2xl p-6 sm:p-8 text-white transition-colors duration-300"
+          className={`flex flex-col lg:flex-row items-center justify-center gap-8 rounded-2xl p-6 sm:p-8 transition-colors duration-300 border ${
+            isLight
+              ? 'bg-white border-slate-200/90 text-slate-900 shadow-sm'
+              : 'border-slate-800 text-white'
+          }`}
           style={{
-            backgroundColor: isLight ? '#1E293B' : effectiveCardBg,
-            boxShadow: `0 20px 40px -15px ${effectiveBgHex}80`,
+            backgroundColor: isLight ? '#FFFFFF' : effectiveCardBg,
+            boxShadow: isLight ? '0 10px 30px -10px rgba(0,0,0,0.06)' : `0 20px 40px -15px ${effectiveBgHex}80`,
           }}
         >
           {/* 9:16 Vertical Video Frame */}
@@ -587,10 +612,10 @@ export const VeoVideoPlayer: React.FC<VeoVideoPlayerProps> = ({ newsletter }) =>
                   WE
                 </div>
                 <div>
-                  <span className={`font-serif text-xs font-bold block tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                  <span className={`font-serif text-xs font-bold block tracking-tight ${isReelVisualDark ? 'text-white drop-shadow-sm' : 'text-slate-950'}`}>
                     LIVING WORD EMBASSY
                   </span>
-                  <span className={`text-[10px] font-medium flex items-center gap-1 ${isLight ? 'text-amber-800 font-semibold' : 'text-amber-300'}`}>
+                  <span className={`text-[10px] font-medium flex items-center gap-1 ${isReelVisualDark ? 'text-amber-300 drop-shadow-sm' : 'text-amber-800 font-bold'}`}>
                     <BookOpen className="w-2.5 h-2.5 text-amber-500" />
                     <span>{citationFormatted}</span>
                   </span>
@@ -606,34 +631,40 @@ export const VeoVideoPlayer: React.FC<VeoVideoPlayerProps> = ({ newsletter }) =>
             <div className="relative z-10 text-center my-auto px-2">
               {currentSegment === 'hook' && (
                 <div className="animate-fade-in space-y-2">
-                  <span className={`inline-block text-xs font-black uppercase px-2.5 py-1 rounded shadow-md tracking-wider ${
-                    isLight ? 'bg-amber-600 text-white' : 'bg-amber-400 text-slate-900'
-                  }`}>
+                  <span className="inline-block text-xs font-black uppercase px-2.5 py-1 rounded shadow-md tracking-wider bg-amber-500 text-slate-950">
                     QUESTION OF FAITH
                   </span>
-                  <h4 className={`font-serif text-xl sm:text-2xl font-black leading-tight ${
-                    isLight ? 'text-slate-900' : 'text-white drop-shadow-md'
+                  <div className={`p-3 rounded-xl ${
+                    isReelVisualDark 
+                      ? 'bg-black/60 backdrop-blur-md border border-white/20 shadow-lg' 
+                      : 'bg-white/95 backdrop-blur-md border border-amber-300 shadow-md'
                   }`}>
-                    “{hookText}”
-                  </h4>
+                    <h4 className={`font-serif text-xl sm:text-2xl font-black leading-tight ${
+                      isReelVisualDark ? 'text-white drop-shadow-md' : 'text-slate-950'
+                    }`}>
+                      “{hookText}”
+                    </h4>
+                  </div>
                 </div>
               )}
 
               {currentSegment === 'narration' && (
                 <div className="animate-fade-in space-y-3">
-                  <div className={`p-3.5 rounded-xl transition-colors ${
-                    isLight ? 'bg-white/80 backdrop-blur-sm border border-amber-200/80 shadow-xs' : ''
+                  <div className={`p-4 rounded-xl transition-colors shadow-lg ${
+                    isReelVisualDark
+                      ? 'bg-black/70 backdrop-blur-md border border-white/20'
+                      : 'bg-white/95 backdrop-blur-md border border-amber-300'
                   }`}>
-                    <p className={`font-scripture text-lg sm:text-xl leading-relaxed italic font-medium ${
-                      isLight ? 'text-slate-900' : 'text-[#FEF3C7] drop-shadow-lg'
+                    <p className={`font-scripture text-lg sm:text-xl leading-relaxed italic font-bold ${
+                      isReelVisualDark ? 'text-[#FEF3C7] drop-shadow-md' : 'text-slate-950'
                     }`}>
                       {narrationText}
                     </p>
                   </div>
                   <div className={`inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-serif border ${
-                    isLight
-                      ? 'bg-amber-50 text-amber-900 border-amber-300 font-semibold'
-                      : 'bg-black/70 backdrop-blur-md text-amber-200 border-amber-500/40'
+                    isReelVisualDark
+                      ? 'bg-black/80 backdrop-blur-md text-amber-300 border-amber-500/50 font-bold'
+                      : 'bg-amber-100/90 text-amber-950 border-amber-300 font-bold shadow-xs'
                   }`}>
                     <BookOpen className="w-3 h-3 text-amber-500" />
                     <span>{citationFormatted}</span>
@@ -642,16 +673,16 @@ export const VeoVideoPlayer: React.FC<VeoVideoPlayerProps> = ({ newsletter }) =>
               )}
 
               {currentSegment === 'cta' && (
-                <div className={`animate-fade-in space-y-3 p-4 rounded-xl border ${
-                  isLight
-                    ? 'bg-white/95 backdrop-blur-md border-amber-300 shadow-md'
-                    : 'bg-black/70 backdrop-blur-md border-amber-400/30'
+                <div className={`animate-fade-in space-y-3 p-4 rounded-xl border shadow-lg ${
+                  isReelVisualDark
+                    ? 'bg-black/80 backdrop-blur-md border-amber-400/40 text-white'
+                    : 'bg-white/95 backdrop-blur-md border-amber-300 text-slate-950'
                 }`}>
                   <Sparkles className="w-8 h-8 text-amber-500 mx-auto animate-bounce" />
-                  <h4 className={`font-serif text-lg font-bold leading-snug ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                  <h4 className={`font-serif text-lg font-bold leading-snug ${isReelVisualDark ? 'text-white' : 'text-slate-950'}`}>
                     {ctaText}
                   </h4>
-                  <p className={`text-xs font-semibold ${isLight ? 'text-amber-800' : 'text-amber-300'}`}>
+                  <p className={`text-xs font-bold ${isReelVisualDark ? 'text-amber-300' : 'text-amber-800'}`}>
                     www.wordembassy.org
                   </p>
                 </div>
@@ -661,20 +692,20 @@ export const VeoVideoPlayer: React.FC<VeoVideoPlayerProps> = ({ newsletter }) =>
             {/* Bottom Controls inside vertical reel */}
             <div className="relative z-10 space-y-3">
               {/* Progress bar */}
-              <div className={`w-full h-1.5 rounded-full overflow-hidden ${isLight ? 'bg-amber-200/80' : 'bg-slate-700/80'}`}>
+              <div className={`w-full h-1.5 rounded-full overflow-hidden ${isReelVisualDark ? 'bg-slate-700/80' : 'bg-amber-200/80'}`}>
                 <div
-                  className={`h-full transition-all duration-100 ease-linear rounded-full ${isLight ? 'bg-amber-600' : 'bg-amber-400'}`}
+                  className={`h-full transition-all duration-100 ease-linear rounded-full ${isReelVisualDark ? 'bg-amber-400' : 'bg-amber-600'}`}
                   style={{ width: `${progress}%` }}
                 />
               </div>
 
-              <div className={`flex items-center justify-between ${isLight ? 'text-slate-800' : 'text-white/90'}`}>
+              <div className={`flex items-center justify-between ${isReelVisualDark ? 'text-white/90' : 'text-slate-800'}`}>
                 <button
                   onClick={handleTogglePlay}
                   className={`p-2.5 rounded-full transition-colors ${
-                    isLight
-                      ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-md'
-                      : 'bg-white/20 hover:bg-white/30 backdrop-blur-md'
+                    isReelVisualDark
+                      ? 'bg-white/20 hover:bg-white/30 backdrop-blur-md text-white'
+                      : 'bg-slate-900 text-white hover:bg-slate-800 shadow-md'
                   }`}
                   id="veo-toggle-play-btn"
                 >
@@ -684,9 +715,9 @@ export const VeoVideoPlayer: React.FC<VeoVideoPlayerProps> = ({ newsletter }) =>
                 <button
                   onClick={() => setIsMuted(!isMuted)}
                   className={`p-2 rounded-full transition-colors ${
-                    isLight
-                      ? 'bg-slate-200/80 text-slate-800 hover:bg-slate-300'
-                      : 'bg-white/10 hover:bg-white/20'
+                    isReelVisualDark
+                      ? 'bg-white/10 hover:bg-white/20 text-white'
+                      : 'bg-slate-200/80 text-slate-800 hover:bg-slate-300'
                   }`}
                   id="veo-toggle-mute-btn"
                 >
@@ -696,9 +727,9 @@ export const VeoVideoPlayer: React.FC<VeoVideoPlayerProps> = ({ newsletter }) =>
                 <button
                   onClick={handleReset}
                   className={`p-2 rounded-full transition-colors ${
-                    isLight
-                      ? 'bg-slate-200/80 text-slate-800 hover:bg-slate-300'
-                      : 'bg-white/10 hover:bg-white/20'
+                    isReelVisualDark
+                      ? 'bg-white/10 hover:bg-white/20 text-white'
+                      : 'bg-slate-200/80 text-slate-800 hover:bg-slate-300'
                   }`}
                   id="veo-reset-btn"
                   title="Reset to beginning"
@@ -714,12 +745,10 @@ export const VeoVideoPlayer: React.FC<VeoVideoPlayerProps> = ({ newsletter }) =>
                     onClick={() => jumpToSegment('hook')}
                     className={`flex-1 py-1 px-1.5 rounded transition-colors text-center ${
                       currentSegment === 'hook'
-                        ? isLight
-                          ? 'bg-amber-600 text-white font-black shadow-xs'
-                          : 'bg-amber-500 text-slate-950 font-black'
-                        : isLight
-                        ? 'bg-slate-200/90 text-slate-700 hover:bg-slate-300'
-                        : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                        ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                        : isReelVisualDark
+                        ? 'bg-white/10 text-slate-300 hover:bg-white/20'
+                        : 'bg-slate-200/90 text-slate-700 hover:bg-slate-300'
                     }`}
                     title="Jump to 1. Hook (0-3s)"
                   >
@@ -729,12 +758,10 @@ export const VeoVideoPlayer: React.FC<VeoVideoPlayerProps> = ({ newsletter }) =>
                     onClick={() => jumpToSegment('narration')}
                     className={`flex-1 py-1 px-1.5 rounded transition-colors text-center ${
                       currentSegment === 'narration'
-                        ? isLight
-                          ? 'bg-amber-600 text-white font-black shadow-xs'
-                          : 'bg-amber-500 text-slate-950 font-black'
-                        : isLight
-                        ? 'bg-slate-200/90 text-slate-700 hover:bg-slate-300'
-                        : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                        ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                        : isReelVisualDark
+                        ? 'bg-white/10 text-slate-300 hover:bg-white/20'
+                        : 'bg-slate-200/90 text-slate-700 hover:bg-slate-300'
                     }`}
                     title="Jump to 2. Scripture Narration (3-20s)"
                   >
@@ -744,12 +771,10 @@ export const VeoVideoPlayer: React.FC<VeoVideoPlayerProps> = ({ newsletter }) =>
                     onClick={() => jumpToSegment('cta')}
                     className={`flex-1 py-1 px-1.5 rounded transition-colors text-center ${
                       currentSegment === 'cta'
-                        ? isLight
-                          ? 'bg-amber-600 text-white font-black shadow-xs'
-                          : 'bg-amber-500 text-slate-950 font-black'
-                        : isLight
-                        ? 'bg-slate-200/90 text-slate-700 hover:bg-slate-300'
-                        : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                        ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                        : isReelVisualDark
+                        ? 'bg-white/10 text-slate-300 hover:bg-white/20'
+                        : 'bg-slate-200/90 text-slate-700 hover:bg-slate-300'
                     }`}
                     title="Jump to 3. Call to Action (20-25s)"
                   >
@@ -763,39 +788,43 @@ export const VeoVideoPlayer: React.FC<VeoVideoPlayerProps> = ({ newsletter }) =>
           {/* Video Information & Multi-Platform Output Actions */}
           <div className="flex-1 space-y-4 max-w-md">
             <div className="space-y-1">
-              <span className={`text-xs font-bold uppercase tracking-widest ${isLight ? 'text-amber-800 font-black' : 'text-amber-400'}`}>
+              <span className={`text-xs font-black uppercase tracking-widest ${isLight ? 'text-amber-800' : 'text-amber-400'}`}>
                 Multi-Platform Video Output
               </span>
-              <h4 className={`font-serif text-2xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>
+              <h4 className={`font-serif text-2xl font-bold ${isLight ? 'text-slate-950' : 'text-white'}`}>
                 {newsletter.YouTubeTitle || `${newsletter.Title} (YouTube Short)`}
               </h4>
-              <p className={`text-sm ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+              <p className={`text-sm leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
                 Generated with high-retention scripture hooks and cloud video automation with Creatomate and Google Veo.
               </p>
             </div>
 
             <div className={`rounded-xl p-4 border space-y-3 text-xs ${
               isLight
-                ? 'bg-white border-amber-200/80 shadow-xs'
-                : 'bg-slate-800/80 border-slate-700'
+                ? 'bg-slate-50 border-slate-200/90 shadow-xs text-slate-900'
+                : 'bg-slate-800/80 border-slate-700 text-white'
             }`}>
               <div>
-                <span className={`font-semibold block mb-1 ${isLight ? 'text-amber-800' : 'text-amber-300'}`}>
+                <span className={`font-bold block mb-1 ${isLight ? 'text-amber-900' : 'text-amber-300'}`}>
                   Hook (0-3s):
                 </span>
-                <p className={`italic ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>{hookText}</p>
+                <p className={`italic font-medium leading-relaxed ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>{hookText}</p>
               </div>
               <div>
-                <span className={`font-semibold block mb-1 ${isLight ? 'text-amber-800' : 'text-amber-300'}`}>
+                <span className={`font-bold block mb-1 ${isLight ? 'text-amber-900' : 'text-amber-300'}`}>
                   Spoken Narration (3-45s):
                 </span>
-                <p className={`leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>{narrationText}</p>
+                <p className={`leading-relaxed font-medium ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>{narrationText}</p>
               </div>
               <div>
-                <span className={`font-semibold block mb-1 ${isLight ? 'text-amber-800' : 'text-amber-300'}`}>
+                <span className={`font-bold block mb-1 ${isLight ? 'text-amber-900' : 'text-amber-300'}`}>
                   Veo AI Video Prompt:
                 </span>
-                <p className="text-slate-400 font-mono text-[11px] bg-slate-900/80 p-2.5 rounded border border-slate-800">
+                <p className={`font-mono text-[11px] p-2.5 rounded border leading-relaxed ${
+                  isLight
+                    ? 'bg-white text-slate-800 border-slate-200'
+                    : 'bg-slate-900/80 text-slate-300 border-slate-800'
+                }`}>
                   {newsletter.VeoVideoPrompt ||
                     'Cinematic 9:16 vertical video of serene golden sunrise over quiet mountains, soft ambient lighting, high definition, 45 seconds.'}
                 </p>
@@ -901,13 +930,13 @@ export const VeoVideoPlayer: React.FC<VeoVideoPlayerProps> = ({ newsletter }) =>
           </div>
 
           {/* Sub Navigation Tabs */}
-          <div className="flex items-center gap-2 border-b border-slate-200 pb-2 text-xs font-bold">
+          <div className={`flex items-center gap-2 border-b pb-2 text-xs font-bold ${isLight ? 'border-slate-200' : 'border-slate-800'}`}>
             <button
               onClick={() => setCreatomateTab('devotional')}
               className={`pb-2 px-3 transition-colors border-b-2 ${
                 creatomateTab === 'devotional'
-                  ? 'border-amber-600 text-amber-700'
-                  : 'border-transparent text-slate-500 hover:text-slate-900'
+                  ? isLight ? 'border-amber-600 text-amber-700 font-black' : 'border-amber-400 text-amber-400 font-black'
+                  : isLight ? 'border-transparent text-slate-600 hover:text-slate-950' : 'border-transparent text-slate-400 hover:text-white'
               }`}
             >
               4-Slide Storyboard Modifications
@@ -916,8 +945,8 @@ export const VeoVideoPlayer: React.FC<VeoVideoPlayerProps> = ({ newsletter }) =>
               onClick={() => setCreatomateTab('curl')}
               className={`pb-2 px-3 transition-colors border-b-2 flex items-center gap-1.5 ${
                 creatomateTab === 'curl'
-                  ? 'border-amber-600 text-amber-700'
-                  : 'border-transparent text-slate-500 hover:text-slate-900'
+                  ? isLight ? 'border-amber-600 text-amber-700 font-black' : 'border-amber-400 text-amber-400 font-black'
+                  : isLight ? 'border-transparent text-slate-600 hover:text-slate-950' : 'border-transparent text-slate-400 hover:text-white'
               }`}
             >
               <Terminal className="w-3.5 h-3.5" />
@@ -927,8 +956,8 @@ export const VeoVideoPlayer: React.FC<VeoVideoPlayerProps> = ({ newsletter }) =>
               onClick={() => setCreatomateTab('editor')}
               className={`pb-2 px-3 transition-colors border-b-2 flex items-center gap-1.5 ${
                 creatomateTab === 'editor'
-                  ? 'border-amber-600 text-amber-700'
-                  : 'border-transparent text-slate-500 hover:text-slate-900'
+                  ? isLight ? 'border-amber-600 text-amber-700 font-black' : 'border-amber-400 text-amber-400 font-black'
+                  : isLight ? 'border-transparent text-slate-600 hover:text-slate-950' : 'border-transparent text-slate-400 hover:text-white'
               }`}
             >
               <Sliders className="w-3.5 h-3.5" />

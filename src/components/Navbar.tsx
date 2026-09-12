@@ -1,11 +1,13 @@
 import React from 'react';
-import { BookOpen, Shield, Video, Archive, Info, Sparkles, Mail, Database, Mountain, Layers } from 'lucide-react';
+import { BookOpen, Shield, Video, Archive, Info, Sparkles, Mail, Database, Mountain, Layers, LogOut } from 'lucide-react';
 
 interface NavbarProps {
   currentView: string;
   onNavigate: (view: string, slug?: string) => void;
   isAdmin: boolean;
+  isAdminAuthenticated?: boolean;
   onToggleAdmin: () => void;
+  onSignOut?: () => void;
   currentSceneryTitle?: string;
   onCycleScenery?: () => void;
 }
@@ -14,7 +16,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentView,
   onNavigate,
   isAdmin,
+  isAdminAuthenticated,
   onToggleAdmin,
+  onSignOut,
   currentSceneryTitle,
   onCycleScenery,
 }) => {
@@ -26,13 +30,34 @@ export const Navbar: React.FC<NavbarProps> = ({
         <span>LIVING WORD EMBASSY DIGITAL MINISTRY • BIBLE TEACHING • FAITH • PRAYER</span>
         <button
           onClick={onToggleAdmin}
-          className="ml-3 text-[11px] bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 px-2 py-0.5 rounded border border-amber-400/40 transition-colors flex items-center gap-1 font-semibold"
+          className={`ml-3 text-[11px] px-2 py-0.5 rounded border transition-colors flex items-center gap-1 font-semibold ${
+            isAdmin
+              ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold hover:bg-amber-400'
+              : isAdminAuthenticated
+              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40 hover:bg-emerald-500/30'
+              : 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border-amber-400/40'
+          }`}
           id="toggle-admin-top-btn"
           title="Admin Login & Editorial Control Center"
         >
           <Shield className="w-3 h-3" />
-          {isAdmin ? 'Switch to Reader Site' : 'Admin Login'}
+          {isAdmin
+            ? 'Switch to Reader Site'
+            : isAdminAuthenticated
+            ? 'Admin Console'
+            : 'Admin Login'}
         </button>
+        {isAdminAuthenticated && onSignOut && (
+          <button
+            onClick={onSignOut}
+            className="ml-1 text-[11px] bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 px-2 py-0.5 rounded border border-rose-400/40 transition-colors flex items-center gap-1 font-semibold"
+            title="Sign out of Admin Console"
+            id="signout-admin-top-btn"
+          >
+            <LogOut className="w-3 h-3" />
+            <span>Sign Out</span>
+          </button>
+        )}
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

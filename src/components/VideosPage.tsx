@@ -48,6 +48,32 @@ export const VideosPage: React.FC<VideosPageProps> = ({
             Watch vertical 9:16 devotional reels, biblical expositions, and video reflections generated through the Google Veo pipeline.
           </p>
 
+          {/* Direct Channel Links */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <a
+              href="https://www.youtube.com/channel/UCymieOPsE0wPoPjS-vC57LA"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition-colors"
+              id="videos-page-youtube-btn"
+            >
+              <Youtube className="w-3.5 h-3.5" />
+              <span>Subscribe on YouTube</span>
+              <ExternalLink className="w-3 h-3 opacity-80" />
+            </a>
+            <a
+              href="https://www.tiktok.com/@embassyword"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-slate-900 hover:bg-black text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition-colors"
+              id="videos-page-tiktok-btn"
+            >
+              <Video className="w-3.5 h-3.5 text-pink-400" />
+              <span>Follow TikTok (@embassyword)</span>
+              <ExternalLink className="w-3 h-3 opacity-80" />
+            </a>
+          </div>
+
           {/* Filter Pills */}
           <div className="flex items-center justify-center gap-2 pt-4">
             <button

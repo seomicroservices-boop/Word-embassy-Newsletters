@@ -19,6 +19,8 @@ export const INITIAL_SETTINGS: AppSettings = {
   ReplyToEmail: 'embassyword@gmail.com',
   EmailEnabled: true,
   WelcomeEmailEnabled: true,
+  AdminPassword: 'Embassy2026!',
+  AdminPin: '7777',
 };
 
 export const INITIAL_TOPICS: Topic[] = [

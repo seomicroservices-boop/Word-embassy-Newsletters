@@ -1,5 +1,6 @@
-import React from 'react';
-import { BookOpen, Mail, ExternalLink, ShieldCheck, Youtube, Facebook, Users, Tv, Smartphone, Instagram, Twitter } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BookOpen, Mail, ExternalLink, ShieldCheck, Youtube, Facebook, Users, Tv, Smartphone, Instagram, Twitter, Eye, Activity } from 'lucide-react';
+import { subscribeToVisitorStats, fetchVisitorStats, VisitorStatsData } from '../services/visitorCounter';
 
 interface FooterProps {
   onNavigate: (view: string, slug?: string) => void;
@@ -30,7 +31,7 @@ export const OFFICIAL_CHANNELS = [
     id: 'tiktok-main',
     name: 'Living Word Embassy TikTok',
     category: 'TikTok Shorts & Reels',
-    url: 'https://www.tiktok.com/@paulinefaith67?_r=1&_t=ZT-99IFvhsT9w6',
+    url: 'https://www.tiktok.com/@embassyword',
     description: 'Daily faith moments, short devotionals & inspiring messages',
     icon: Smartphone,
     colorClass: 'text-pink-400 group-hover:text-pink-300 bg-pink-500/10 border-pink-500/20',
@@ -74,6 +75,18 @@ export const OFFICIAL_CHANNELS = [
 ];
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
+  const [visitorStats, setVisitorStats] = useState<VisitorStatsData | null>(null);
+
+  useEffect(() => {
+    // Subscribe to visitor stats updates
+    const unsubscribe = subscribeToVisitorStats((stats) => {
+      setVisitorStats(stats);
+    });
+    // Fetch initial stats
+    fetchVisitorStats();
+    return () => unsubscribe();
+  }, []);
+
   const handleAdminClick = () => {
     if (onOpenAdmin) {
       onOpenAdmin();
@@ -372,6 +385,47 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
               <span>Facebook Group</span>
               <ExternalLink className="w-3 h-3 text-indigo-400/70" />
             </a>
+          </div>
+        </div>
+
+        {/* Live Ministry Traffic & Page Counter */}
+        <div className="py-4 my-2 border-b border-slate-850 flex flex-wrap items-center justify-between gap-4 text-xs" id="footer-page-counter">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/90 border border-slate-700 text-slate-300 shadow-inner">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Live Traffic</span>
+            </div>
+            <div className="flex items-center gap-3 text-slate-300">
+              <div className="flex items-center gap-1.5">
+                <Eye className="w-3.5 h-3.5 text-amber-400" />
+                <span>
+                  <strong className="text-amber-300 font-mono font-semibold text-sm">
+                    {visitorStats ? visitorStats.totalViews.toLocaleString() : '1,430+'}
+                  </strong>{' '}
+                  <span className="text-slate-400">Page Views</span>
+                </span>
+              </div>
+              <span className="text-slate-600">•</span>
+              <div className="flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5 text-emerald-400" />
+                <span>
+                  <strong className="text-emerald-300 font-mono font-semibold text-sm">
+                    {visitorStats ? visitorStats.uniqueVisitors.toLocaleString() : '612+'}
+                  </strong>{' '}
+                  <span className="text-slate-400">Unique Readers</span>
+                </span>
+              </div>
+              <span className="text-slate-600 hidden sm:inline">•</span>
+              <span className="text-slate-400 text-[11px] hidden sm:inline">
+                <span className="text-indigo-300 font-medium">+{visitorStats ? visitorStats.todayViews : '48'}</span> today
+              </span>
+            </div>
+          </div>
+          <div className="text-[11px] text-slate-400 italic">
+            Spreading the Word of God worldwide
           </div>
         </div>
 

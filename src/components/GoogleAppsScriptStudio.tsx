@@ -531,8 +531,8 @@ const VIDEO_CONFIG = {
   DURATION_SECONDS: 15, // 15-second high-impact Short
 
   // 1. BACKGROUND CANVAS & TEXTURE:
-  // Palettes: '#FAF8F5' (Warm Ivory Parchment - Attached), '#0B0F19' (Obsidian Midnight), '#0A1526' (Royal Navy), '#1F0A12' (Burgundy), '#061C14' (Emerald)
-  BACKGROUND_COLOR: '#FAF8F5', // Warm Ivory Parchment (matches attached image)
+  // Palettes: '#FAF8F5' (Warm Ivory Parchment - Resident Pastor), '#0B0F19' (Obsidian Midnight), '#0A1526' (Royal Navy), '#1F0A12' (Burgundy), '#061C14' (Emerald)
+  BACKGROUND_COLOR: '#FAF8F5', // Warm Ivory Parchment (Resident Pastor signature style)
   BACKGROUND_IMAGE_URL: '', // Optional: Direct image URL if hosted on Google Drive or CDN
 
   // 2. BACKGROUND MUSIC:
@@ -1308,111 +1308,155 @@ function renderMp4WithCreatomate(scripture, verseText, prayer, theme) {
     });
   }
 
-  // 1. Ministry Brand Header (Warm amber bronze on cream canvas)
+  // Detect background brightness for adaptive contrast using relative luminance
+  const currentBgColor = (typeof VIDEO_CONFIG !== 'undefined' && VIDEO_CONFIG.BACKGROUND_COLOR) ? String(VIDEO_CONFIG.BACKGROUND_COLOR).trim() : "#FAF8F5";
+  function calculateLuminance(hexStr) {
+    try {
+      const clean = hexStr.replace('#', '');
+      const full = clean.length === 3 ? clean.split('').map(function(c) { return c + c; }).join('') : clean;
+      const num = parseInt(full, 16);
+      const r = ((num >> 16) & 255) / 255;
+      const g = ((num >> 8) & 255) / 255;
+      const b = (num & 255) / 255;
+      return 0.299 * r + 0.587 * g + 0.114 * b;
+    } catch(e) {
+      return 0;
+    }
+  }
+  const isDarkCanvas = currentBgColor.toLowerCase() === 'black' || calculateLuminance(currentBgColor) < 0.55;
+
+  // 1. Ministry Brand Header (Prominent 46px Bold Display with High-Contrast Deep Bronze/Gold)
   elements.push({
     type: "text",
     text: "LIVING WORD EMBASSY",
     font_family: "Montserrat",
-    font_weight: "800",
-    font_size: "52 px",
-    fill_color: "#B45309",
+    font_weight: "900",
+    font_size: "46 px",
+    letter_spacing: "6%",
+    fill_color: isDarkCanvas ? "#FBBF24" : "#9A3412",
     x: "50%",
-    y: "8%",
-    width: "880 px",
+    y: "6.5%",
+    width: "920 px",
     x_alignment: "50%",
     y_alignment: "50%",
     duration: duration
   });
 
-  // 2. Sub-Header: Daily Devotional Badge with Book & Chapter Callout
-  const bookText = (ref && ref.book) ? String(ref.book).toUpperCase() : "DAILY BIBLE";
+  // 2. Sub-Header: Daily Devotional Pill Badge (High-Contrast, Crisp Card)
+  const bookText = (ref && ref.book) ? String(ref.book).toUpperCase() : "DAILY SCRIPTURE";
   const chapterText = (ref && ref.chapterLabel) ? String(ref.chapterLabel).toUpperCase() : "";
   const themeText = theme ? String(theme).toUpperCase() : "FAITH";
   const verseTextLabel = (ref && ref.verseLabel) ? String(ref.verseLabel).toUpperCase() : "";
 
   elements.push({
     type: "text",
-    text: "DAILY DEVOTIONAL • " + bookText + (chapterText ? (" • " + chapterText) : "") + " • " + themeText,
-    font_family: "Inter",
-    font_weight: "600",
+    text: "☀️ DAILY DEVOTIONAL • " + bookText + (chapterText ? (" " + chapterText) : ""),
+    font_family: "Montserrat",
+    font_weight: "800",
     font_size: "30 px",
-    fill_color: "#64748B",
+    letter_spacing: "3%",
+    fill_color: isDarkCanvas ? "#F8FAFC" : "#0F172A",
+    background_color: isDarkCanvas ? "rgba(255, 255, 255, 0.16)" : "rgba(154, 52, 18, 0.14)",
+    background_border_radius: "25%",
+    background_x_padding: "50%",
+    background_y_padding: "25%",
     x: "50%",
-    y: "13%",
-    width: "880 px",
+    y: "11%",
+    width: "920 px",
     x_alignment: "50%",
     y_alignment: "50%",
     duration: duration
   });
 
-  // 3a. Primary Scripture Citation Headline (Huge, Ultra-Sharp 74px Midnight Display)
+  // 3a. Primary Scripture Book Headline (Huge, Ultra-Sharp 86px Bold Serif)
   elements.push({
     type: "text",
-    text: (ref && ref.short) ? ref.short : (scripture || "Daily Scripture"),
+    text: (ref && ref.book) ? String(ref.book).toUpperCase() : (scripture || "DAILY SCRIPTURE"),
     font_family: "Playfair Display",
     font_weight: "900",
-    font_size: "74 px",
-    fill_color: "#0F172A",
+    font_size: "86 px",
+    fill_color: isDarkCanvas ? "#FFFFFF" : "#020617",
+    shadow_color: isDarkCanvas ? "rgba(0, 0, 0, 0.8)" : "rgba(0, 0, 0, 0.08)",
+    shadow_blur: "10 px",
+    shadow_y: "3 px",
     x: "50%",
-    y: "22%",
-    width: "860 px",
+    y: "17.5%",
+    width: "920 px",
     x_alignment: "50%",
     y_alignment: "50%",
     duration: duration
   });
 
-  // 3b. Dedicated Chapter & Verse Callout (Crisp Amber Gold 36px Montserrat)
+  // 3b. Dedicated Chapter & Verse Callout (Crisp Amber Gold 42px Bold Montserrat in Badge)
   const calloutText = chapterText + (verseTextLabel ? (" • " + verseTextLabel) : "");
   if (calloutText) {
     elements.push({
       type: "text",
       text: calloutText,
       font_family: "Montserrat",
-      font_weight: "800",
-      font_size: "36 px",
-      fill_color: "#D97706",
+      font_weight: "900",
+      font_size: "40 px",
+      letter_spacing: "4%",
+      fill_color: isDarkCanvas ? "#FDE68A" : "#9A3412",
+      background_color: isDarkCanvas ? "rgba(245, 158, 11, 0.25)" : "rgba(180, 83, 9, 0.16)",
+      background_border_radius: "25%",
+      background_x_padding: "50%",
+      background_y_padding: "25%",
       x: "50%",
-      y: "28%",
-      width: "860 px",
+      y: "24%",
+      width: "920 px",
       x_alignment: "50%",
       y_alignment: "50%",
       duration: duration
     });
   }
 
-  // 4. Scripture Verse (Crisp 48px Deep Charcoal Serif with full explicit Chapter & Verse citation)
+  // 4. Scripture Verse Card Container (High-Contrast Solid White/Slate Card - 100% Legible, No Fading!)
+  const scriptureFontSize = verseText.length > 220 ? "46 px" : verseText.length > 130 ? "52 px" : "56 px";
   elements.push({
     type: "text",
-    text: "“" + verseText + "”\\n— " + ref.fullFormatted,
+    text: "“" + verseText + "”\\n\\n— " + ref.fullFormatted,
     font_family: "Lora",
-    font_weight: "600",
-    font_size: "48 px",
-    line_height: "145%",
-    fill_color: "#1E293B",
+    font_weight: "700",
+    font_size: scriptureFontSize,
+    line_height: "155%",
+    fill_color: isDarkCanvas ? "#FFFFFF" : "#020617",
+    background_color: isDarkCanvas ? "rgba(15, 23, 42, 0.94)" : "rgba(255, 255, 255, 0.98)",
+    background_border_radius: "25%",
+    background_x_padding: "50%",
+    background_y_padding: "35%",
+    shadow_color: isDarkCanvas ? "rgba(0, 0, 0, 0.6)" : "rgba(15, 23, 42, 0.12)",
+    shadow_blur: "24 px",
+    shadow_y: "8 px",
     x: "50%",
     y: "47%",
-    width: "840 px",
+    width: "920 px",
     x_alignment: "50%",
     y_alignment: "50%",
     duration: duration
   });
 
-  // 5. Prayer Box (Warm highlight container with explicit Chapter & Verse in title)
+  // 5. Prayer Box (Crisp High-Contrast Warm Card Container with Large Bold Font)
+  const prayerTextContent = prayer ? ("🙏 PRAYER OF FAITH\\n" + prayer) : ("🙏 PRAYER OF FAITH (" + ref.fullFormatted + ")\\nMay God's divine favor and supernatural peace accompany you today.");
+  const prayerFontSize = prayer && prayer.length > 180 ? "40 px" : "44 px";
   elements.push({
     type: "text",
-    text: "🙏 PRAYER OF FAITH (" + ref.fullFormatted + ")\\n" + prayer,
+    text: prayerTextContent,
     font_family: "Inter",
     font_weight: "700",
-    font_size: "38 px",
-    line_height: "140%",
-    fill_color: "#78350F",
-    background_color: "rgba(245, 158, 11, 0.12)",
-    background_border_radius: "20%",
-    background_x_padding: "25%",
-    background_y_padding: "20%",
+    font_size: prayerFontSize,
+    line_height: "150%",
+    fill_color: isDarkCanvas ? "#FDE68A" : "#0F172A",
+    background_color: isDarkCanvas ? "rgba(30, 41, 59, 0.94)" : "rgba(255, 251, 235, 0.98)",
+    background_border_radius: "25%",
+    background_x_padding: "50%",
+    background_y_padding: "35%",
+    shadow_color: isDarkCanvas ? "rgba(0, 0, 0, 0.6)" : "rgba(180, 83, 9, 0.12)",
+    shadow_blur: "20 px",
+    shadow_y: "6 px",
     x: "50%",
-    y: "75%",
-    width: "860 px",
+    y: "74%",
+    width: "920 px",
     x_alignment: "50%",
     y_alignment: "50%",
     duration: duration
@@ -1423,12 +1467,17 @@ function renderMp4WithCreatomate(scripture, verseText, prayer, theme) {
     type: "text",
     text: "SUBSCRIBE FOR DAILY BLESSINGS • " + ref.fullFormatted,
     font_family: "Montserrat",
-    font_weight: "700",
-    font_size: "28 px",
-    fill_color: "#64748B",
+    font_weight: "800",
+    font_size: "34 px",
+    letter_spacing: "3%",
+    fill_color: isDarkCanvas ? "#CBD5E1" : "#334155",
+    background_color: isDarkCanvas ? "rgba(15, 23, 42, 0.70)" : "rgba(255, 255, 255, 0.85)",
+    background_border_radius: "25%",
+    background_x_padding: "50%",
+    background_y_padding: "25%",
     x: "50%",
     y: "93%",
-    width: "880 px",
+    width: "920 px",
     x_alignment: "50%",
     y_alignment: "50%",
     duration: duration

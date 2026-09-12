@@ -243,6 +243,8 @@ export interface AppSettings {
   ReplyToEmail: string;
   EmailEnabled: boolean;
   WelcomeEmailEnabled: boolean;
+  AdminPassword?: string;
+  AdminPin?: string;
 }
 
 export interface GeminiStructuredNewsletterResponse {

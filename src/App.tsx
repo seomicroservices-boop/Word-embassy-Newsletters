@@ -35,6 +35,7 @@ import {
   INITIAL_SETTINGS,
 } from './data/initialData';
 import { parseScriptureReference, formatBibleCitation } from './services/bibleScripture';
+import { recordPageView } from './services/visitorCounter';
 import {
   NaturalSceneryBackground,
   ScenerySettings,
@@ -124,14 +125,26 @@ export default function App() {
     if (saved) {
       try {
         const parsed: SubscriberGroup[] = JSON.parse(saved);
-        // Ensure default groups like Test Subscribers & Living Word Embassy exist
-        const merged = [...parsed];
-        for (const initialGroup of INITIAL_SUBSCRIBER_GROUPS) {
-          if (!merged.some((g) => g.Name.toLowerCase() === initialGroup.Name.toLowerCase())) {
-            merged.unshift(initialGroup);
+        // Ensure default groups like Test Subscribers & Living Word Embassy exist without duplicates
+        const seenIds = new Set<string>();
+        const seenNames = new Set<string>();
+        const uniqueGroups: SubscriberGroup[] = [];
+
+        for (const g of parsed) {
+          if (g && g.GroupID && !seenIds.has(g.GroupID) && !seenNames.has(g.Name.toLowerCase())) {
+            seenIds.add(g.GroupID);
+            seenNames.add(g.Name.toLowerCase());
+            uniqueGroups.push(g);
           }
         }
-        return merged;
+        for (const initialGroup of INITIAL_SUBSCRIBER_GROUPS) {
+          if (!seenIds.has(initialGroup.GroupID) && !seenNames.has(initialGroup.Name.toLowerCase())) {
+            seenIds.add(initialGroup.GroupID);
+            seenNames.add(initialGroup.Name.toLowerCase());
+            uniqueGroups.unshift(initialGroup);
+          }
+        }
+        return uniqueGroups;
       } catch (e) {
         console.error('Error parsing subscriber groups:', e);
       }
@@ -206,33 +219,51 @@ export default function App() {
 
   const [adminUser, setAdminUser] = useState<{ email: string; role: string; name: string } | null>(
     () => {
-      const saved = localStorage.getItem('we_admin_user');
-      return saved
-        ? JSON.parse(saved)
-        : {
-            email: 'embassyword@gmail.com',
-            role: 'Super Administrator & Lead Editor',
-            name: 'Living Word Embassy Lead Editor',
-          };
+      const isAuth =
+        localStorage.getItem('we_admin_authenticated') === 'true' ||
+        sessionStorage.getItem('we_admin_authenticated') === 'true';
+      if (!isAuth) return null;
+      const saved =
+        localStorage.getItem('we_admin_user') ||
+        sessionStorage.getItem('we_admin_user');
+      return saved ? JSON.parse(saved) : null;
     }
   );
 
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem('we_admin_authenticated') === 'true' || true;
+    const isAuth =
+      localStorage.getItem('we_admin_authenticated') === 'true' ||
+      sessionStorage.getItem('we_admin_authenticated') === 'true';
+    const hasUser =
+      localStorage.getItem('we_admin_user') ||
+      sessionStorage.getItem('we_admin_user');
+    return Boolean(isAuth && hasUser);
   });
 
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Sync to local storage
+  // Sync to storage
   useEffect(() => {
-    if (adminUser) {
-      localStorage.setItem('we_admin_user', JSON.stringify(adminUser));
-      localStorage.setItem('we_admin_authenticated', 'true');
+    if (adminUser && isAdminAuthenticated) {
+      // Keep state intact
     } else {
       localStorage.removeItem('we_admin_user');
       localStorage.setItem('we_admin_authenticated', 'false');
+      sessionStorage.removeItem('we_admin_user');
+      sessionStorage.setItem('we_admin_authenticated', 'false');
     }
-  }, [adminUser]);
+  }, [adminUser, isAdminAuthenticated]);
+
+  const handleAdminSignOut = () => {
+    setAdminUser(null);
+    setIsAdminAuthenticated(false);
+    localStorage.removeItem('we_admin_user');
+    localStorage.setItem('we_admin_authenticated', 'false');
+    sessionStorage.removeItem('we_admin_user');
+    sessionStorage.setItem('we_admin_authenticated', 'false');
+    addSystemLog('AdminAuth', 'INFO', 'Admin signed out of editorial console');
+    handleNavigate('home');
+  };
 
   // Sync to local storage
   useEffect(() => {
@@ -303,15 +334,24 @@ export default function App() {
     }));
   };
 
-  // Google Analytics (GA4) Page View Tracking
+  // Google Analytics (GA4) and Internal Visitor Page Counter
   useEffect(() => {
+    const pagePath =
+      currentView === 'newsletter' || currentView === 'detail'
+        ? `/newsletter/${currentSlug}`
+        : currentView === 'pillar'
+        ? `/pillar/${currentSlug}`
+        : currentView === 'blog-post'
+        ? `/blog/${currentSlug}`
+        : currentView === 'home'
+        ? '/'
+        : `/${currentView}`;
+
+    // Record in persistent ministry visitor counter
+    recordPageView(pagePath, document.title);
+
+    // Record in Google Analytics if configured
     if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
-      const pagePath =
-        currentView === 'newsletter'
-          ? `/newsletter/${currentSlug}`
-          : currentView === 'home'
-          ? '/'
-          : `/${currentView}`;
       (window as any).gtag('event', 'page_view', {
         page_path: pagePath,
         page_title: document.title,
@@ -1143,7 +1183,9 @@ export default function App() {
         currentView={currentView}
         onNavigate={handleNavigate}
         isAdmin={currentView === 'admin'}
+        isAdminAuthenticated={isAdminAuthenticated}
         onToggleAdmin={() => handleNavigate(currentView === 'admin' ? 'home' : 'admin')}
+        onSignOut={handleAdminSignOut}
         currentSceneryTitle={scenerySettings.intensity === 'off' ? 'Scenery: Off' : activeScenery.title}
         onCycleScenery={handleCycleScenery}
       />
@@ -1234,28 +1276,37 @@ export default function App() {
           <AdminAuthGate
             isAuthenticated={isAdminAuthenticated}
             userEmail={adminUser?.email}
-            onAuthenticate={(authenticatedUser) => {
+            adminPassword={settings.AdminPassword || 'Embassy2026!'}
+            adminPin={settings.AdminPin || '7777'}
+            onCancel={() => handleNavigate('home')}
+            onAuthenticate={(authenticatedUser, rememberMe = true) => {
               setAdminUser(authenticatedUser);
               setIsAdminAuthenticated(true);
+              if (rememberMe) {
+                localStorage.setItem('we_admin_user', JSON.stringify(authenticatedUser));
+                localStorage.setItem('we_admin_authenticated', 'true');
+              } else {
+                sessionStorage.setItem('we_admin_user', JSON.stringify(authenticatedUser));
+                sessionStorage.setItem('we_admin_authenticated', 'true');
+              }
               addSystemLog(
                 'AdminAuth',
                 'SUCCESS',
-                `Google Stack Engine Admin signed in as ${authenticatedUser.name} (${authenticatedUser.email})`
+                `Admin password authenticated: ${authenticatedUser.name} (${authenticatedUser.email})`
               );
             }}
-            onSignOut={() => {
-              setAdminUser(null);
-              setIsAdminAuthenticated(false);
-              addSystemLog('AdminAuth', 'INFO', 'Admin signed out of Google Stack Engine');
-            }}
+            onSignOut={handleAdminSignOut}
             onBypassWithPin={(pin) => {
-              if (pin === '7777') {
-                setAdminUser({
+              if (pin === (settings.AdminPin || '7777')) {
+                const user = {
                   email: 'embassyword@gmail.com',
                   role: 'Super Administrator & Lead Editor',
                   name: 'Living Word Embassy Lead Editor',
-                });
+                };
+                setAdminUser(user);
                 setIsAdminAuthenticated(true);
+                localStorage.setItem('we_admin_user', JSON.stringify(user));
+                localStorage.setItem('we_admin_authenticated', 'true');
                 return true;
               }
               return false;
